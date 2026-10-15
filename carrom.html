@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>克朗棋</title>
+<style>
+:root{--ink:#3b1a10;--cream:#fff3e2;--gold:#f0a64a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;color:#fff;background:radial-gradient(ellipse at center,#8a3424 0%,#5a1d14 55%,#3a0f0a 100%);
+  font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC","Heiti TC",system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+.hidden{display:none!important}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column}
+#home{align-items:center;justify-content:center;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
+#homeIn{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+#title{font-size:46px;font-weight:900;letter-spacing:8px;color:#ffd59a;text-shadow:0 4px 0 #2a0a05}
+#subtitle{margin:2px 0 6px;font-weight:700;color:#f6cfa4}
+#homeCv{width:220px;height:220px;margin:6px 0 10px}
+#who{font-size:14px;font-weight:800;background:rgba(0,0,0,.3);border:2px solid #c98b4a;border-radius:999px;padding:4px 14px;margin-bottom:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btnW{border:3px solid #6b3410;background:linear-gradient(#f6d29e,#d9a465);color:#4a200c;box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 5px 0 #4a200c;cursor:pointer;font:inherit;font-weight:900}
+.btnW:active{transform:translateY(4px);box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 1px 0 #4a200c}
+.bigBtn{width:100%;display:flex;align-items:center;gap:12px;border-radius:18px;padding:12px 16px;margin-bottom:12px;text-align:left}
+.bigBtn .ic{font-size:30px;width:42px;text-align:center}.bigBtn b{font-size:20px;display:block}.bigBtn small{font-size:13px;opacity:.8;font-weight:700}
+.smallRow{display:flex;gap:8px;width:100%}.smallRow button{flex:1;border-radius:14px;padding:9px 4px;font-size:15px}
+#topBar{display:flex;align-items:center;gap:8px;padding:10px 10px 0;padding-top:calc(10px + env(safe-area-inset-top));z-index:2}
+.circBtn{width:50px;height:50px;border-radius:50%;font-size:22px;display:grid;place-items:center;padding:0;flex:none}
+#msg{flex:1;text-align:center;font-weight:900;font-size:17px;color:#ffe2b8;text-shadow:0 2px 0 #2a0a05;min-height:1.3em;line-height:1.3}
+#stage{position:relative;flex:1;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.card{position:absolute;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:18px;background:rgba(40,10,5,.55);box-shadow:0 4px 14px rgba(0,0,0,.35);transition:box-shadow .2s,background .2s;z-index:2;pointer-events:none}
+.card.turn{background:linear-gradient(#e8bf86,#c99054);color:#3b1a10;box-shadow:0 0 0 3px #ffd27a,0 0 22px rgba(255,200,100,.6)}
+.card .av{width:52px;height:52px;border-radius:50%;background:#cfe3f0;display:grid;place-items:center;font-size:30px;position:relative;flex:none;border:3px solid rgba(255,255,255,.6)}
+.card .coin{position:absolute;right:-6px;bottom:-4px;width:22px;height:22px;border-radius:50%;border:2px solid #333}
+.card .nm{font-weight:900;font-size:17px;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .sc{display:flex;gap:6px;margin-top:4px;font-size:13px;font-weight:800;align-items:center}
+.card .sc span{background:rgba(255,255,255,.25);border-radius:8px;padding:2px 8px}
+.card .tm{height:5px;background:rgba(0,0,0,.25);border-radius:3px;margin-top:5px;overflow:hidden}.card .tm i{display:block;height:100%;background:#4caf50;width:100%}
+@media (max-width:520px){.card{padding:6px 10px;gap:8px}.card .av{width:40px;height:40px;font-size:22px}.card .nm{font-size:15px;max-width:120px}.card .coin{width:18px;height:18px}#title{font-size:40px}}
+</style>
+</head>
+<body>
+<div id="home" class="screen">
+  <div id="homeIn">
+    <div id="title">克朗棋</div>
+    <div id="subtitle">用母球把自己的棋子彈進洞</div>
+    <canvas id="homeCv"></canvas>
+    <div id="who">單機模式</div>
+    <button class="bigBtn btnW hidden" id="bResume" style="background:linear-gradient(#bfe89a,#86c45a)"><span class="ic">💾</span><span><b>繼續上次的棋局</b><small id="resumeSub"></small></span></button>
+    <button class="bigBtn btnW" id="bAi"><span class="ic">🤖</span><span><b>對戰電腦</b><small>簡單・普通・困難</small></span></button>
+    <button class="bigBtn btnW" id="bLocal"><span class="ic">👥</span><span><b>雙人同樂</b><small>同一台裝置輪流玩</small></span></button>
+    <button class="bigBtn btnW" id="bOnline"><span class="ic">🌐</span><span><b>連線對戰</b><small>和線上玩家一對一</small></span></button>
+    <div class="smallRow">
+      <button class="btnW" id="bHall">🏠 大廳</button>
+      <button class="btnW" id="bRank">🏆 排行</button>
+      <button class="btnW" id="bHelp">❓ 說明</button>
+      <button class="btnW" id="bSound"></button>
+    </div>
+    <div class="mgCredit" style="color:#f6cfa4">遊戲製作：Eric Hu</div>
+  </div>
+</div>
+<div id="game" class="screen hidden">
+  <div id="topBar">
+    <button class="circBtn btnW" id="bBack">⬅️</button>
+    <div id="msg"></div>
+    <button class="circBtn btnW" id="bSound2"></button>
+  </div>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div class="card" id="cTop"><div class="av"><span class="face">🙂</span><i class="coin"></i></div><div><div class="nm"></div><div class="sc"></div><div class="tm hidden"><i></i></div></div></div>
+    <div class="card" id="cBot"><div class="av"><span class="face">🙂</span><i class="coin"></i></div><div><div class="nm"></div><div class="sc"></div><div class="tm hidden"><i></i></div></div></div>
+  </div>
+</div>
+<script src="common.js"></script>
+<script src="carrom-core.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = MG.$, esc = MG.esc;
+var sfx = {
+  hit: function (v) { MG.noise(0.04, Math.min(0.9, 0.12 + v / 160), 2600, 3); },
+  wall: function (v) { MG.noise(0.06, Math.min(0.6, 0.08 + v / 220), 500, 1.5); },
+  pocket: function () { MG.noise(0.12, 0.5, 300, 1); setTimeout(function () { MG.tone(180, 0.12, 'sine', 0.07, 0.6); }, 60); },
+  shoot: function (p) { MG.noise(0.05, 0.3 + p * 0.5, 1800, 2); }
+};
+
+// ---------- 版面 ----------
+var cv = $('cv'), ctx = cv.getContext('2d'), stageEl = $('stage');
+var V = { B: 300, cx: 0, cy: 0, k: 1, flip: false, sliderY: 0, sliderW: 0 };
+function computeLayout() {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight, land = W > H * 1.15;
+  var B;
+  if (land) { B = Math.min(H * 0.86, W - 330, 720); B = Math.max(B, Math.min(H * 0.8, W * 0.6)); V.cx = Math.max(W / 2 + 90, 300 + B / 2); if (V.cx + B / 2 > W - 10) V.cx = W - 10 - B / 2; V.cy = H * 0.46; }
+  else { B = Math.min(W - 16, H - 190, 720); V.cx = W / 2; V.cy = 84 + B / 2; if (V.cy + B / 2 + 80 > H) V.cy = H - 80 - B / 2; }
+  V.B = B; V.k = B / 112; V.land = land;
+  V.sliderY = V.cy + B / 2 + B * 0.075; V.sliderW = (CR.BX * 2 + 10) * V.k;
+  var top = $('cTop'), bot = $('cBot');
+  if (land) {
+    top.style.left = bot.style.left = Math.max(10, V.cx - B / 2 - 280) + 'px';
+    top.style.top = (V.cy - B / 2 + 10) + 'px'; top.style.bottom = 'auto';
+    bot.style.top = (V.cy + B / 2 - bot.offsetHeight - 10) + 'px';
+  } else {
+    top.style.left = '10px'; top.style.top = Math.max(4, V.cy - B / 2 - top.offsetHeight - 8) + 'px';
+    bot.style.left = 'auto'; bot.style.right = '10px'; bot.style.top = (V.sliderY + B * 0.06) + 'px';
+    if (V.sliderY + B * 0.06 + bot.offsetHeight > H) bot.style.top = (H - bot.offsetHeight - 4) + 'px';
+  }
+  if (land) bot.style.right = 'auto';
+}
+function S(x, y) { var f = V.flip ? -1 : 1; return [V.cx + x * f * V.k, V.cy + y * f * V.k]; }
+function Wd(px, py) { var f = V.flip ? -1 : 1; return [(px - V.cx) / V.k * f, (py - V.cy) / V.k * f]; }
+function resize() {
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = stageEl.clientWidth * dpr; cv.height = stageEl.clientHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  computeLayout(); if (!$('home').classList.contains('hidden')) drawHome();
+}
+window.addEventListener('resize', resize);
+
+// ---------- 繪製 ----------
+var boardCache = null, boardCacheKey = '';
+function drawBoardTo(c, cx, cy, k) {
+  var H = CR.HALF, F = 6, r = function (v) { return v * k; };
+  c.save(); c.translate(cx, cy);
+  c.shadowColor = 'rgba(0,0,0,0.5)'; c.shadowBlur = r(4); c.shadowOffsetY = r(1.5);
+  rr(c, -r(H + F), -r(H + F), r((H + F) * 2), r((H + F) * 2), r(6)); c.fillStyle = '#7a4a2a'; c.fill(); c.shadowColor = 'transparent';
+  var fg = c.createLinearGradient(-r(H + F), -r(H + F), r(H + F), r(H + F)); fg.addColorStop(0, '#a0673d'); fg.addColorStop(1, '#6b3b1f');
+  rr(c, -r(H + F) + 2, -r(H + F) + 2, r((H + F) * 2) - 4, r((H + F) * 2) - 4, r(5.5)); c.fillStyle = fg; c.fill();
+  // 角落橘色飾條
+  c.strokeStyle = '#f2a54e'; c.lineWidth = r(1.6); c.lineCap = 'round';
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (s) {
+    c.beginPath(); c.moveTo(s[0] * r(H + F - 1.2), s[1] * r(H - 8)); c.lineTo(s[0] * r(H + F - 1.2), s[1] * r(H + F - 5)); c.arcTo(s[0] * r(H + F - 1.2), s[1] * r(H + F - 1.2), s[0] * r(H + F - 5), s[1] * r(H + F - 1.2), r(4)); c.lineTo(s[0] * r(H - 8), s[1] * r(H + F - 1.2)); c.stroke();
+  });
+  var g = c.createRadialGradient(0, 0, r(5), 0, 0, r(H * 1.4)); g.addColorStop(0, '#f6dcb4'); g.addColorStop(0.6, '#ecc796'); g.addColorStop(1, '#d9a873');
+  c.fillStyle = g; c.fillRect(-r(H), -r(H), r(H * 2), r(H * 2));
+  c.save(); c.beginPath(); c.rect(-r(H), -r(H), r(H * 2), r(H * 2)); c.clip();
+  var rnd = MGrng(3);
+  for (var i = 0; i < 70; i++) { var y = -H + i * (2 * H / 70) + rnd() * 1.2; c.beginPath(); c.moveTo(-r(H), r(y)); c.bezierCurveTo(-r(H / 3), r(y + rnd() * 2 - 1), r(H / 3), r(y + rnd() * 2 - 1), r(H), r(y + rnd() - 0.5)); c.strokeStyle = 'rgba(150,90,40,' + (0.03 + rnd() * 0.06) + ')'; c.lineWidth = r(0.2 + rnd() * 0.4); c.stroke(); }
+  c.restore();
+  c.strokeStyle = 'rgba(0,0,0,0.25)'; c.lineWidth = r(0.6); c.strokeRect(-r(H), -r(H), r(H * 2), r(H * 2));
+  var red = '#b0533a'; c.strokeStyle = red; c.lineWidth = r(0.45);
+  // 四邊基線
+  for (var s = 0; s < 4; s++) {
+    c.save(); c.rotate(s * Math.PI / 2);
+    var by = CR.BASE, bx = CR.BX + 2.5, w = 1.7;
+    c.beginPath(); c.moveTo(-r(bx), r(by - w)); c.lineTo(r(bx), r(by - w)); c.moveTo(-r(bx), r(by + w)); c.lineTo(r(bx), r(by + w)); c.stroke();
+    [-1, 1].forEach(function (sd) { c.beginPath(); c.arc(sd * r(bx), r(by), r(w + 0.4), 0, Math.PI * 2); c.fillStyle = 'rgba(176,83,58,0.18)'; c.fill(); c.stroke(); });
+    c.beginPath(); c.moveTo(-r(bx + 2.1), r(by - w)); c.lineTo(-r(bx + 2.1), r(by - w - 25)); c.moveTo(r(bx + 2.1), r(by - w)); c.lineTo(r(bx + 2.1), r(by - w - 25)); c.globalAlpha = 0; c.stroke(); c.globalAlpha = 1;
+    c.restore();
+  }
+  // 斜角箭頭
+  c.lineWidth = r(0.35);
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (d) {
+    var a = [d[0] * (H - 10), d[1] * (H - 10)], b = [d[0] * 20, d[1] * 20];
+    c.beginPath(); c.moveTo(r(a[0]), r(a[1])); c.lineTo(r(b[0]), r(b[1])); c.stroke();
+    c.beginPath(); c.arc(r(b[0] + d[0] * 1.5), r(b[1] + d[1] * 1.5), r(1.6), 0, Math.PI * 2); c.stroke();
+  });
+  // 中央圖樣
+  c.beginPath(); c.arc(0, 0, r(16), 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.arc(0, 0, r(13.5), 0, Math.PI * 2); c.stroke();
+  c.lineWidth = r(0.3);
+  for (var p = 0; p < 8; p++) { c.save(); c.rotate(p * Math.PI / 4); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(r(4.5), r(-5), 0, r(-11)); c.quadraticCurveTo(r(-4.5), r(-5), 0, 0); c.stroke(); c.restore(); }
+  for (var p2 = 0; p2 < 8; p2++) { c.save(); c.rotate(p2 * Math.PI / 4 + Math.PI / 8); c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(r(3), r(-3.5), 0, r(-7.5)); c.quadraticCurveTo(r(-3), r(-3.5), 0, 0); c.stroke(); c.restore(); }
+  c.beginPath(); c.arc(0, 0, r(3), 0, Math.PI * 2); c.stroke();
+  // 球袋
+  CR.POCKETS.forEach(function (pk) {
+    var pg = c.createRadialGradient(r(pk[0]), r(pk[1]), r(1), r(pk[0]), r(pk[1]), r(CR.PR + 0.6));
+    pg.addColorStop(0, '#000'); pg.addColorStop(0.85, '#111'); pg.addColorStop(1, '#3a2010');
+    c.beginPath(); c.arc(r(pk[0]), r(pk[1]), r(CR.PR + 0.6), 0, Math.PI * 2); c.fillStyle = pg; c.fill();
+  });
+  c.restore();
+}
+function MGrng(seed) { var a = seed; return function () { a = (a * 16807) % 2147483647; return a / 2147483647; }; }
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function drawPiece(c, x, y, t, k, scale, alpha) {
+  var rad = (t === 's' ? CR.SRAD : CR.CRAD) * k * (scale || 1);
+  c.save(); c.globalAlpha = alpha == null ? 1 : alpha;
+  c.beginPath(); c.arc(x + rad * 0.12, y + rad * 0.2, rad, 0, Math.PI * 2); c.fillStyle = 'rgba(0,0,0,0.3)'; c.fill();
+  var cols = { w: ['#ffffff', '#ece6dc', '#b9b2a6'], b: ['#6b6b6b', '#3c3c3c', '#1e1e1e'], q: ['#ff7b6b', '#d1342a', '#7a1410'], s: ['#f3dcc0', '#d9ad7c', '#9b6a3c'] }[t];
+  var g = c.createRadialGradient(x - rad * 0.35, y - rad * 0.35, rad * 0.1, x, y, rad);
+  g.addColorStop(0, cols[0]); g.addColorStop(0.6, cols[1]); g.addColorStop(1, cols[2]);
+  c.beginPath(); c.arc(x, y, rad, 0, Math.PI * 2); c.fillStyle = g; c.fill();
+  c.lineWidth = Math.max(1, rad * 0.08); c.strokeStyle = 'rgba(0,0,0,0.35)'; c.stroke();
+  if (t === 's') {
+    c.beginPath(); c.arc(x, y, rad * 0.72, 0, Math.PI * 2); c.strokeStyle = '#8a5a30'; c.lineWidth = rad * 0.07; c.stroke();
+    c.save(); c.translate(x, y); c.beginPath();
+    for (var i = 0; i < 16; i++) { var a = i * Math.PI / 8, rr2 = i % 2 ? rad * 0.18 : rad * 0.6; c.lineTo(Math.cos(a) * rr2, Math.sin(a) * rr2); }
+    c.closePath(); c.fillStyle = '#8a5a30'; c.fill(); c.restore();
+  } else {
+    c.lineWidth = Math.max(0.8, rad * 0.07); c.strokeStyle = t === 'w' ? 'rgba(120,110,100,0.5)' : 'rgba(255,255,255,0.18)';
+    [0.75, 0.5].forEach(function (f) { c.beginPath(); c.arc(x, y, rad * f, 0, Math.PI * 2); c.stroke(); });
+  }
+  c.restore();
+}
+function drawHome() {
+  var c = $('homeCv'), dpr = Math.min(2, window.devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight; if (!W) return;
+  c.width = W * dpr; c.height = H * dpr; var x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var k = W / 112; drawBoardTo(x, W / 2, H / 2, k);
+  var g = CR.newGame(); g.p.forEach(function (p) { drawPiece(x, W / 2 + p.x * k, H / 2 + p.y * k, p.t, k); });
+  drawPiece(x, W / 2, H / 2 + CR.BASE * k, 's', k);
+}
+
+// ---------- 遊戲狀態 ----------
+var G = null; // {mode:'ai'|'local'|'online', st, seat(me), names:[], ai:'easy', sim, simSeat, after, strikerX:[0,0], busy}
+var drag = null, aimVec = null, lastT = performance.now(), acc = 0, hitCd = 0, wallCd = 0, pocketFx = [];
+function viewSeat() { if (!G) return 0; if (G.mode === 'local') return G.st.turn; return G.seat; }
+function myTurn() { return G && G.st.winner < 0 && !G.sim && !G.aiBusy && (G.mode === 'local' || G.st.turn === G.seat); }
+function setMsg(t) { $('msg').textContent = t || ''; }
+function turnText() {
+  if (!G) return '';
+  var st = G.st; if (st.winner >= 0) return '';
+  var who = G.names[st.turn];
+  if (G.mode === 'local') return '輪到 ' + who + '（' + (st.turn ? '黑棋' : '白棋') + '）';
+  return st.turn === G.seat ? '輪到你了！拖曳瞄準，放開出手' : '等待 ' + who + ' 出手…';
+}
+function startGame(mode, opts) {
+  G = { mode: mode, st: opts.state || CR.newGame(), seat: opts.seat || 0, names: opts.names, ai: opts.ai, sim: null, strikerX: [0, 0], aiBusy: false, turnEnd: 0, turnMs: 0 };
+  V.flip = viewSeat() === 1;
+  showScreen('game'); renderCards(); setMsg(turnText());
+  if (opts.strikerX) G.strikerX = opts.strikerX.slice();
+  persist(); maybeAi();
+}
+function persist() {
+  if (!G || G.mode === 'online') return;
+  if (G.st.winner >= 0) { MG.saveGame('cr', null); return; }
+  MG.saveGame('cr', { mode: G.mode, ai: G.ai, names: G.names, st: G.st, strikerX: G.strikerX });
+}
+function renderCards() {
+  if (!G) return;
+  var vs = viewSeat(), st = G.st;
+  [['cBot', vs], ['cTop', 1 - vs]].forEach(function (pair) {
+    var el = $(pair[0]), seat = pair[1], col = CR.colorOf(seat);
+    el.querySelector('.nm').textContent = G.names[seat];
+    el.querySelector('.face').textContent = G.mode === 'ai' && seat === 1 ? '🤖' : seat === 0 ? '😊' : '😎';
+    el.querySelector('.coin').style.background = col === 'w' ? '#f4efe6' : '#333';
+    el.querySelector('.sc').innerHTML = '<span>' + (col === 'w' ? '⚪' : '⚫') + ' ' + CR.score(st, seat) + ' / 9</span>' + (st.queen === seat ? '<span>👑 皇后</span>' : st.pend === seat ? '<span>👑 待保住</span>' : '');
+    el.classList.toggle('turn', st.winner < 0 && st.turn === seat);
+    el.querySelector('.tm').classList.toggle('hidden', !(G.mode === 'online' && st.turn === seat && st.winner < 0 && !G.sim));
+  });
+  computeLayout();
+}
+function curStrikerX() { return G.strikerX[G.st.turn]; }
+function shoot(shot) {
+  if (G.mode === 'online') { MG.state.sock.emit('cr:shot', shot); G.waiting = true; return; }
+  runShot(G.st.turn, shot, null);
+}
+function runShot(seat, shot, after) {
+  G.sim = new CR.Sim(G.st, shot, seat); G.simSeat = seat; G.after = after; G.strikerX[seat] = shot.x; acc = 0;
+  sfx.shoot(Math.min(1, Math.sqrt(shot.vx * shot.vx + shot.vy * shot.vy) / CR.MAXV)); setMsg(''); renderCards();
+}
+function finishShot() {
+  var sim = G.sim, ns = G.after || CR.applyShot(G.st, G.simSeat, sim);
+  G.sim = null; G.after = null; G.st = ns; persist();
+  if (G.mode === 'local') V.flip = ns.turn === 1;
+  renderCards();
+  if (ns.msg) MG.toast((G.mode !== 'local' && G.simSeat !== G.seat ? G.names[G.simSeat] + '：' : '') + ns.msg, 2600);
+  if (ns.winner >= 0) return gameOver(ns.winner, '');
+  setMsg(turnText());
+  if (ns.turn !== G.simSeat && G.mode !== 'local') MG.sfx.click();
+  maybeAi();
+}
+function maybeAi() {
+  if (G.mode !== 'ai' || G.st.turn !== 1 || G.st.winner >= 0) return;
+  G.aiBusy = true; setMsg('電腦思考中…');
+  setTimeout(function () {
+    if (!G || G.mode !== 'ai') return;
+    var shot = CR.aiShot(G.st, 1, G.ai);
+    var fromX = G.strikerX[1], t = 0;
+    var iv = setInterval(function () {
+      if (!G) return clearInterval(iv);
+      t += 0.06; G.strikerX[1] = fromX + (shot.x - fromX) * Math.min(1, t);
+      if (t >= 1) { clearInterval(iv); G.aiAim = shot; setTimeout(function () { if (!G) return; G.aiAim = null; G.aiBusy = false; runShot(1, shot, null); }, 450); }
+    }, 16);
+  }, 700);
+}
+function gameOver(winner, reason) {
+  var me = G.mode === 'local' ? -1 : G.seat, won = winner === me;
+  if (G.mode === 'local' || won) MG.sfx.win(); else MG.sfx.lose();
+  if (G.mode === 'ai' && won && G.ai === 'hard') MG.post('/api/cr/ai', {});
+  var title = G.mode === 'local' ? '🎉 ' + esc(G.names[winner]) + ' 獲勝！' : won ? '🎉 你贏了！' : '😢 你輸了';
+  var mode = G.mode, ai = G.ai;
+  MG.showModal('<h2>' + title + '</h2>' + (reason ? '<p style="text-align:center">' + reason + '</p>' : '') +
+    '<div class="mgStats"><div>' + CR.score(G.st, 0) + '<small>⚪ 白棋</small></div><div>' + CR.score(G.st, 1) + '<small>⚫ 黑棋</small></div></div>' +
+    (mode === 'online' ? '<button class="mgBtn green" id="gAgain">再來一局</button>' : '<button class="mgBtn green" id="gAgain">再玩一次</button>') +
+    '<button class="mgBtn grey" id="gHome">回選單</button>', 'win');
+  $('gAgain').onclick = function () {
+    if (mode === 'online') { MG.state.sock.emit('cr:again'); MG.showModal('<h2>等待對手…</h2><p class="mgNote">對手也按「再來一局」就會開始</p><button class="mgBtn grey" id="gLeave">離開</button>', 'wait'); $('gLeave').onclick = function () { leaveOnline(); MG.closeModal(); goHome(); }; }
+    else { MG.closeModal(); if (mode === 'ai') startAi(ai); else startLocal(); }
+  };
+  $('gHome').onclick = function () { MG.closeModal(); if (mode === 'online') leaveOnline(); goHome(); };
+}
+
+// ---------- 操作 ----------
+function strikerScreen() { var s = G.st.turn; return S(curStrikerX(), CR.baseY(s)); }
+cv.addEventListener('pointerdown', function (e) {
+  MG.unlock();
+  if (!G || !myTurn()) return;
+  var r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, ss = strikerScreen();
+  var nearStriker = Math.hypot(px - ss[0], py - ss[1]) < CR.SRAD * V.k * 2.2;
+  var onSlider = py > V.cy + V.B / 2 - 2 && Math.abs(px - V.cx) < V.sliderW / 2 + 30;
+  drag = { mode: nearStriker || onSlider ? 'place' : 'aim', id: e.pointerId, fromStriker: nearStriker && !onSlider, x0: px, y0: py };
+  cv.setPointerCapture(e.pointerId);
+  if (drag.mode === 'place') movePlace(px); else { aimVec = [ss[0] - px, ss[1] - py]; }
+});
+cv.addEventListener('pointermove', function (e) {
+  if (!drag || !G) return;
+  var r = cv.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+  if (drag.mode === 'place' && drag.fromStriker && py - drag.y0 > 18 && Math.abs(py - drag.y0) > Math.abs(px - drag.x0) * 1.2) drag.mode = 'aim';
+  if (drag.mode === 'place') movePlace(px);
+  else { var ss = strikerScreen(); aimVec = [ss[0] - px, ss[1] - py]; }
+});
+function movePlace(px) {
+  var w = Wd(px, V.cy)[0], x = Math.max(-CR.BX, Math.min(CR.BX, w));
+  G.strikerX[G.st.turn] = x;
+  if (G.mode === 'online') { var now = Date.now(); if (!movePlace.t || now - movePlace.t > 80) { movePlace.t = now; MG.state.sock.emit('cr:move', { x: x }); } }
+}
+function power() { if (!aimVec) return 0; return Math.min(1, Math.hypot(aimVec[0], aimVec[1]) / (V.B * 0.32)); }
+function endDrag() {
+  if (!drag || !G) return;
+  var d = drag; drag = null;
+  if (d.mode === 'aim' && aimVec && myTurn()) {
+    var p = power();
+    if (p > 0.06) {
+      var seat = G.st.turn, x = curStrikerX();
+      if (!CR.strikerOk(G.st, seat, x)) { MG.sfx.err(); MG.toast('母球和棋子重疊了，請移動母球位置'); aimVec = null; return; }
+      var f = V.flip ? -1 : 1, len = Math.hypot(aimVec[0], aimVec[1]), dx = aimVec[0] / len * f, dy = aimVec[1] / len * f;
+      var sp = 20 + (CR.MAXV - 20) * p;
+      shoot({ x: x, vx: dx * sp, vy: dy * sp });
+    }
+  }
+  aimVec = null;
+}
+cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', function () { drag = null; aimVec = null; });
+
+// 瞄準預覽：找第一個會碰到的棋子
+function aimPreview(x0, y0, dx, dy) {
+  var best = 1e9, hit = -1, st = G.st;
+  for (var i = 0; i < st.p.length; i++) {
+    var q = st.p[i]; if (q.in) continue;
+    var fx = q.x - x0, fy = q.y - y0, t = fx * dx + fy * dy; if (t <= 0) continue;
+    var d2 = fx * fx + fy * fy - t * t, R = CR.CRAD + CR.SRAD; if (d2 > R * R) continue;
+    var th = t - Math.sqrt(R * R - d2); if (th < best) { best = th; hit = i; }
+  }
+  var wallT = 1e9, H = CR.HALF - CR.SRAD;
+  if (dx > 0) wallT = Math.min(wallT, (H - x0) / dx); if (dx < 0) wallT = Math.min(wallT, (-H - x0) / dx);
+  if (dy > 0) wallT = Math.min(wallT, (H - y0) / dy); if (dy < 0) wallT = Math.min(wallT, (-H - y0) / dy);
+  if (hit >= 0 && best < wallT) return { t: best, hit: hit };
+  return { t: wallT, hit: -1 };
+}
+
+// ---------- 主迴圈 ----------
+function frame(now) {
+  requestAnimationFrame(frame);
+  var dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  if (!G || $('game').classList.contains('hidden')) return;
+  if (G.sim) {
+    acc += dt * 240;
+    var n = Math.floor(acc); acc -= n;
+    for (var i = 0; i < n && !G.sim.done; i++) {
+      G.sim.step();
+      G.sim.hits.forEach(function (h) {
+        if (h[0] === 'hit' && now - hitCd > 35) { hitCd = now; sfx.hit(h[1]); }
+        else if (h[0] === 'wall' && h[1] > 15 && now - wallCd > 50) { wallCd = now; sfx.wall(h[1]); }
+        else if (h[0] === 'pocket') { sfx.pocket(); var o = G.sim.b.filter(function (b) { return b.id === h[1]; })[0]; if (o) pocketFx.push({ x: o.x, y: o.y, px: o.px, py: o.py, t: o.id < 0 ? 's' : G.st.p[o.id].t, s: 0 }); }
+      });
+    }
+    if (G.sim.done) finishShot();
+  }
+  pocketFx.forEach(function (f) { f.s += dt * 3; }); pocketFx = pocketFx.filter(function (f) { return f.s < 1; });
+  if (G.mode === 'online' && G.turnEnd) {
+    var el = $(G.st.turn === viewSeat() ? 'cBot' : 'cTop').querySelector('.tm i');
+    var left = Math.max(0, G.turnEnd - Date.now()); el.style.width = (left / G.turnMs * 100) + '%'; el.style.background = left < 8000 ? '#e74c3c' : '#4caf50';
+  }
+  render(now);
+}
+function render(now) {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight, k = V.k;
+  ctx.clearRect(0, 0, W, H);
+  var key = V.B + ',' + V.flip + ',' + W + ',' + H;
+  if (key !== boardCacheKey) {
+    boardCacheKey = key; var dpr = Math.min(2, window.devicePixelRatio || 1);
+    boardCache = document.createElement('canvas'); boardCache.width = Math.ceil(V.B * dpr) + 4; boardCache.height = boardCache.width;
+    var bc = boardCache.getContext('2d'); bc.setTransform(dpr, 0, 0, dpr, 0, 0); drawBoardTo(bc, V.B / 2 + 1, V.B / 2 + 1, k);
+  }
+  ctx.drawImage(boardCache, V.cx - V.B / 2 - 1, V.cy - V.B / 2 - 1, V.B + 2, V.B + 2);
+  // 滑桿
+  var sy = V.sliderY, sw = V.sliderW, sh = V.B * 0.075;
+  if (myTurn() && G.st.turn === viewSeat()) {
+    ctx.save(); rr(ctx, V.cx - sw / 2, sy - sh / 2, sw, sh, sh / 2);
+    var sg = ctx.createLinearGradient(0, sy - sh / 2, 0, sy + sh / 2); sg.addColorStop(0, '#f0c98f'); sg.addColorStop(1, '#c48a4e');
+    ctx.fillStyle = sg; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#6b3a1a'; ctx.stroke(); ctx.restore();
+    drawPiece(ctx, S(curStrikerX(), 0)[0], sy, 's', k, 0.95);
+  }
+  var st = G.st, sim = G.sim;
+  if (sim) {
+    sim.b.forEach(function (b) { if (!b.on) return; var p = S(b.x, b.y); drawPiece(ctx, p[0], p[1], b.id < 0 ? 's' : st.p[b.id].t, k); });
+  } else {
+    st.p.forEach(function (q) { if (q.in) return; var p = S(q.x, q.y); drawPiece(ctx, p[0], p[1], q.t, k); });
+    if (st.winner < 0) {
+      var seat = st.turn, sx = curStrikerX(), sp = S(sx, CR.baseY(seat)), ok = CR.strikerOk(st, seat, sx);
+      drawPiece(ctx, sp[0], sp[1], 's', k, 1, ok ? 1 : 0.6);
+      if (!ok) { ctx.beginPath(); ctx.arc(sp[0], sp[1], CR.SRAD * k * 1.15, 0, Math.PI * 2); ctx.strokeStyle = '#ff4d3a'; ctx.lineWidth = 3; ctx.stroke(); }
+      else if (myTurn() && !aimVec) { ctx.beginPath(); ctx.arc(sp[0], sp[1], CR.SRAD * k * (1.25 + Math.sin(now / 250) * 0.08), 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,240,200,0.8)'; ctx.lineWidth = 2; ctx.stroke(); }
+      var aim = null;
+      if (aimVec && myTurn() && power() > 0.02) { var f = V.flip ? -1 : 1, len = Math.hypot(aimVec[0], aimVec[1]); aim = { dx: aimVec[0] / len * f, dy: aimVec[1] / len * f, p: power() }; }
+      if (G.aiAim) { var al = Math.hypot(G.aiAim.vx, G.aiAim.vy); aim = { dx: G.aiAim.vx / al, dy: G.aiAim.vy / al, p: al / CR.MAXV }; }
+      if (aim) drawAim(sx, CR.baseY(seat), aim, k, now);
+    }
+  }
+  pocketFx.forEach(function (f) { var x = f.x + (f.px - f.x) * f.s, y = f.y + (f.py - f.y) * f.s, p = S(x, y); drawPiece(ctx, p[0], p[1], f.t, k, 1 - f.s * 0.6, 1 - f.s); });
+}
+function drawAim(x0, y0, aim, k, now) {
+  var pv = aimPreview(x0, y0, aim.dx, aim.dy), a = S(x0, y0), b = S(x0 + aim.dx * pv.t, y0 + aim.dy * pv.t);
+  ctx.save(); ctx.setLineDash([k * 1.2, k * 1]); ctx.lineDashOffset = -now / 40; ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = Math.max(2, k * 0.5);
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.arc(b[0], b[1], CR.SRAD * k, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2; ctx.stroke();
+  if (pv.hit >= 0) {
+    var q = G.st.p[pv.hit], hx = x0 + aim.dx * pv.t, hy = y0 + aim.dy * pv.t, nx = q.x - hx, ny = q.y - hy, nl = Math.hypot(nx, ny);
+    var c0 = S(q.x, q.y), c1 = S(q.x + nx / nl * 12, q.y + ny / nl * 12);
+    ctx.strokeStyle = 'rgba(255,220,120,0.95)'; ctx.lineWidth = Math.max(2, k * 0.5); ctx.beginPath(); ctx.moveTo(c0[0], c0[1]); ctx.lineTo(c1[0], c1[1]); ctx.stroke();
+  }
+  // 力道環
+  ctx.beginPath(); ctx.arc(a[0], a[1], CR.SRAD * k * 1.8, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * aim.p);
+  ctx.strokeStyle = aim.p > 0.8 ? '#ff5a3c' : aim.p > 0.5 ? '#ffc23c' : '#7ddc5a'; ctx.lineWidth = Math.max(4, k * 0.9); ctx.lineCap = 'round'; ctx.stroke();
+  ctx.restore();
+}
+requestAnimationFrame(frame);
+if (/[?&]test=1/.test(location.search)) window.__crTest = { get G() { return G; }, get V() { return V; }, S: S };
+
+// ---------- 模式 ----------
+function showScreen(n) { $('home').classList.toggle('hidden', n !== 'home'); $('game').classList.toggle('hidden', n !== 'game'); resize(); renderCards(); }
+MG.bindSound($('bSound'), true); MG.bindSound($('bSound2'), false);
+function goHome() { if (G && !G.sim) persist(); MG.flushSave('cr'); G = null; showScreen('home'); refreshHome(); }
+function resumeInfo() {
+  var sv = MG.loadGame('cr'); if (!sv || !sv.st || sv.st.winner >= 0) return null;
+  return sv;
+}
+function resume() {
+  var sv = resumeInfo(); if (!sv) return;
+  startGame(sv.mode, { state: sv.st, names: sv.names, ai: sv.ai, strikerX: sv.strikerX });
+  MG.toast('已接續上次的棋局', 1800);
+}
+function refreshHome() {
+  var sv = resumeInfo();
+  $('bResume').classList.toggle('hidden', !sv);
+  if (sv) $('resumeSub').textContent = (sv.mode === 'ai' ? '對戰' + sv.names[1] : '雙人同樂') + '　白 ' + CR.score(sv.st, 0) + ' : 黑 ' + CR.score(sv.st, 1); var S0 = MG.state; $('who').textContent = !S0.online ? '單機模式（連線對戰需要部署到伺服器）' : S0.acct ? '👤 ' + S0.acct.name : '👤 ' + S0.guestName + '（訪客，回大廳可登入）'; }
+function startAi(level) { startGame('ai', { names: [MG.displayName(), '電腦（' + MG.DIFF[level] + '）'], ai: level }); }
+function startLocal() { startGame('local', { names: ['玩家一', '玩家二'] }); }
+$('bAi').onclick = function () {
+  MG.unlock();
+  MG.showModal('<h2>🤖 對戰電腦</h2><p class="mgNote">你是白棋，先手</p><button class="mgBtn green" data-l="easy">簡單</button><button class="mgBtn" data-l="normal">普通</button><button class="mgBtn pink" data-l="hard">困難（贏了會記入排行榜）</button><button class="mgBtn grey" id="aClose">取消</button>', 'info');
+  document.querySelectorAll('#mgModal [data-l]').forEach(function (b) { b.onclick = function () { MG.closeModal(); startAi(b.dataset.l); }; });
+  $('aClose').onclick = MG.closeModal;
+};
+$('bLocal').onclick = function () { MG.unlock(); startLocal(); };
+$('bResume').onclick = function () { MG.unlock(); resume(); };
+document.addEventListener('visibilitychange', function () { if (document.hidden && G && !G.sim) { persist(); MG.flushSave('cr', true); } });
+$('bHall').onclick = function () { location.href = 'index.html'; };
+$('bRank').onclick = function () { MG.unlock(); MG.openRank('cr'); };
+$('bBack').onclick = function () {
+  if (G && G.st.winner < 0) {
+    MG.showModal('<h2>要離開這局嗎？</h2>' + (G.mode === 'online' ? '<p style="text-align:center">連線對戰中離開會算輸。</p>' : '') + '<button class="mgBtn" id="qStay">繼續玩</button><button class="mgBtn grey" id="qLeave">離開</button>', 'confirm');
+    $('qStay').onclick = MG.closeModal; $('qLeave').onclick = function () { MG.closeModal(); if (G && G.mode === 'online') leaveOnline(); goHome(); };
+    return;
+  }
+  if (G && G.mode === 'online') leaveOnline();
+  goHome();
+};
+$('bHelp').onclick = function () {
+  MG.unlock();
+  MG.showModal('<h2>❓ 遊戲說明</h2><h3>🎯 怎麼玩</h3><ul>' +
+    '<li>先手是<b>白棋</b>，後手是<b>黑棋</b>。用母球把自己顏色的棋子打進四個角落的洞。</li>' +
+    '<li><b>移動母球</b>：拖曳下方木條，或直接左右拖曳母球。</li>' +
+    '<li><b>出手</b>：在棋盤上往母球的反方向拉（像彈弓），拉越遠力道越大，放開就出手。</li>' +
+    '<li>打進自己的棋子可以<b>再打一桿</b>；打進對手的棋子算對手的。</li></ul>' +
+    '<h3>👑 紅色皇后</h3><ul><li>皇后打進後，<b>下一桿要再打進一顆自己的棋子</b>才算保住，否則皇后回到中央。</li><li>一定要有人拿下皇后，才能打進最後一顆棋子，否則那顆會退回中央。</li></ul>' +
+    '<h3>⚠️ 犯規</h3><ul><li>母球掉進洞：這桿打進的自己棋子退回中央，並再罰一顆。</li></ul>' +
+    '<h3>🏁 勝利</h3><p>先把自己 9 顆棋子全部打進洞的人獲勝！</p>' +
+    '<button class="mgBtn grey" id="hClose">關閉</button><div class="mgCredit">遊戲製作：Eric Hu</div>', 'help');
+  $('hClose').onclick = MG.closeModal;
+};
+
+// ---------- 連線對戰 ----------
+var room = null, crBound = false;
+function bindOnline(sock) {
+  if (crBound) return; crBound = true;
+  sock.on('cr:room', function (r) { room = r; if (MG.modalKind() === 'crroom') renderRoom(); });
+  sock.on('cr:start', function (o) {
+    MG.closeModal();
+    startGame('online', { state: o.state, seat: o.seat, names: o.names });
+    G.turnEnd = Date.now() + o.turnMs; G.turnMs = o.turnMs;
+  });
+  sock.on('cr:move', function (o) { if (G && G.mode === 'online' && o.seat !== G.seat) G.strikerX[o.seat] = o.x; });
+  sock.on('cr:shot', function (o) {
+    if (!G || G.mode !== 'online') return;
+    G.waiting = false; G.st = o.before; runShot(o.seat, o.shot, o.after); G.turnEnd = 0;
+  });
+  sock.on('cr:turn', function (o) { if (!G || G.mode !== 'online') return; G.turnEnd = Date.now() + o.ms; G.turnMs = o.ms; if (o.state) { G.st = o.state; renderCards(); setMsg(turnText()); } if (o.msg) MG.toast(o.msg); });
+  sock.on('cr:error', function (o) { if (G) G.waiting = false; MG.toast(o.msg || '出手失敗'); });
+  sock.on('cr:end', function (o) {
+    if (!G || G.mode !== 'online') return;
+    var fin = function () { if (G.sim) return setTimeout(fin, 200); G.st.winner = o.winner; renderCards(); if (!o.normal) gameOver(o.winner, o.reason || ''); };
+    if (o.normal) return; // 正常結束由動畫播完後處理
+    fin();
+  });
+  sock.on('disconnect', function () { if (G && G.mode === 'online' && G.st.winner < 0) { MG.toast('連線中斷'); goHome(); } room = null; });
+}
+MG.onSock(bindOnline);
+function leaveOnline() { if (MG.state.sock) MG.state.sock.emit('cr:leave'); room = null; }
+function openOnline() {
+  if (!MG.state.online) return MG.toast('連線對戰需要部署到伺服器後才能使用');
+  if (!MG.state.sock || !MG.state.sock.connected) return MG.toast('正在連線伺服器，請稍候再試');
+  room ? renderRoom() : renderLobby();
+}
+function renderLobby() {
+  MG.showModal('<h2>🌐 連線對戰</h2><p class="mgNote">一對一對戰，先手白棋。每桿限時 30 秒。</p>' + (MG.state.acct ? '' : '<p class="mgNote" style="color:#c2410c">訪客身分的勝場不會記入排行榜</p>') +
+    '<button class="mgBtn" id="oQuick">⚡ 快速配對</button><button class="mgBtn blue" id="oCreate">🏠 建立私人房間</button>' +
+    '<div class="mgRow"><input class="mgInp" id="oCode" inputmode="numeric" maxlength="4" placeholder="輸入 4 位房號"><button class="mgBtn green" id="oJoin" style="margin-top:8px">加入</button></div>' +
+    '<div class="mgErr" id="oErr"></div><button class="mgBtn grey" id="oClose">關閉</button>', 'lobby');
+  var sock = MG.state.sock;
+  $('oQuick').onclick = function () { sock.emit('cr:quick'); MG.showModal('<h2>配對中…</h2>', 'crroom'); };
+  $('oCreate').onclick = function () { sock.emit('cr:create'); MG.showModal('<h2>建立房間中…</h2>', 'crroom'); };
+  $('oJoin').onclick = function () {
+    var code = $('oCode').value.trim(); if (!/^\d{4}$/.test(code)) { $('oErr').textContent = '請輸入 4 位數字房號'; return; }
+    sock.emit('cr:join', { code: code }, function (r) { if (!r.ok) $('oErr').textContent = r.error; else MG.showModal('<h2>加入中…</h2>', 'crroom'); });
+  };
+  $('oClose').onclick = MG.closeModal;
+}
+function renderRoom() {
+  if (!room) return renderLobby();
+  var sock = MG.state.sock, me = sock.id, n = room.players.length;
+  MG.showModal('<h2>' + (room.isPublic ? '⚡ 配對中' : '🏠 私人房間') + '</h2>' +
+    (room.isPublic ? '' : '<p class="mgNote" style="margin:0">房號（告訴朋友）</p><div class="mgCode">' + room.code + '</div>') +
+    '<ul class="mgPlist">' + room.players.map(function (p) { return '<li><span>' + esc(p.name) + (p.guest ? '（訪客）' : '') + '</span><span>' + (p.id === me ? '← 你' : '') + '</span></li>'; }).join('') + '</ul>' +
+    '<p class="mgNote">' + (n < 2 ? '等待對手加入…' : '對手到齊，即將開始！') + '</p><button class="mgBtn grey" id="oLeave">離開</button>', 'crroom');
+  $('oLeave').onclick = function () { leaveOnline(); renderLobby(); };
+}
+$('bOnline').onclick = function () { MG.unlock(); openOnline(); };
+
+resize(); refreshHome();
+MG.init({ socket: true }).then(function () { refreshHome(); });
+})();
+</script>
+</body>
+</html>

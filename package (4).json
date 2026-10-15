@@ -1,0 +1,13 @@
+{
+  "name": "colorful-game-house",
+  "version": "1.0.0",
+  "description": "繽紛遊戲屋 — 倒水瓶、克朗棋、螺絲拆拆樂",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.3",
+    "socket.io": "^4.7.5"
+  }
+}

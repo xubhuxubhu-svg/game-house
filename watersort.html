@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>繽紛倒水瓶</title>
+<style>
+:root{--bg:#b3c5b0;--ink:#34404e;--cream:#fbf8ef;--yellow:#f7c41f;--green:#6a9a1a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+  font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC","Heiti TC",system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+.hidden{display:none!important}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column}
+#home{align-items:center;justify-content:center;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
+#homeIn{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+#title{font-size:44px;font-weight:900;letter-spacing:4px;margin:4px 0 0;text-align:center;line-height:1.15}
+#title span{display:inline-block;text-shadow:0 3px 0 rgba(52,64,78,.25)}
+#subtitle{margin:4px 0 6px;font-weight:700;opacity:.75}
+#homeCv{width:300px;height:150px;margin:6px 0 10px}
+#who{font-size:14px;font-weight:800;background:rgba(255,255,255,.6);border:2px solid var(--ink);border-radius:999px;padding:4px 14px;margin-bottom:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bigBtn{width:100%;display:flex;align-items:center;gap:12px;border:3px solid var(--ink);border-radius:18px;padding:12px 16px;margin-bottom:10px;background:var(--cream);font:inherit;color:var(--ink);cursor:pointer;box-shadow:0 5px 0 rgba(52,64,78,.35);text-align:left}
+.bigBtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(52,64,78,.35)}
+.bigBtn .ic{font-size:30px;width:42px;text-align:center}.bigBtn b{font-size:20px;display:block}.bigBtn small{font-size:13px;opacity:.75;font-weight:700}
+#bCamp{background:#ffe08a}#bDaily{background:#ffc4a0}#bRace{background:#f5b3e0}
+.smallRow{display:flex;gap:8px;width:100%}
+.smallRow button{flex:1;border:3px solid var(--ink);border-radius:14px;padding:9px 4px;background:var(--cream);font:inherit;font-weight:800;font-size:15px;color:var(--ink);cursor:pointer;box-shadow:0 4px 0 rgba(52,64,78,.3)}
+.smallRow button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(52,64,78,.3)}
+#topBar{display:flex;align-items:center;gap:8px;padding:10px 10px 4px;padding-top:calc(10px + env(safe-area-inset-top))}
+.iconBtn{width:46px;height:46px;border-radius:14px;border:3px solid var(--ink);background:var(--cream);font-size:20px;cursor:pointer;color:var(--ink);box-shadow:0 4px 0 rgba(52,64,78,.3);display:grid;place-items:center;padding:0;flex:none}
+.iconBtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(52,64,78,.3)}
+#lvTitle{flex:1;text-align:center;font-weight:900;font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#stats{display:flex;justify-content:center;gap:10px;font-weight:800;font-size:15px}
+#stats span{background:rgba(255,255,255,.55);border-radius:999px;padding:3px 12px;border:2px solid rgba(52,64,78,.5)}
+#stage{position:relative;flex:1;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer}
+.raceBox{position:absolute;top:6px;right:8px;background:rgba(251,248,239,.93);border:2px solid var(--ink);border-radius:12px;padding:6px 10px;font-size:13px;font-weight:800;min-width:150px;max-width:46vw;pointer-events:none}
+.raceBox .r{display:flex;align-items:center;gap:6px;margin:2px 0}.raceBox .r .n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.raceBox .bar{width:50px;height:8px;background:#ddd;border-radius:4px;overflow:hidden;flex:none}.raceBox .bar i{display:block;height:100%;background:var(--green)}.raceBox .me{color:#c2410c}
+#countdown{position:absolute;inset:0;display:grid;place-items:center;font-size:110px;font-weight:900;color:#fff;text-shadow:0 6px 0 var(--ink);pointer-events:none;background:rgba(52,64,78,.15)}
+#botBar{display:flex;justify-content:center;gap:14px;padding:8px 10px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.toolBtn{border:3px solid var(--ink);border-radius:16px;background:var(--cream);font:inherit;font-weight:900;font-size:15px;color:var(--ink);padding:8px 14px;min-width:84px;cursor:pointer;box-shadow:0 4px 0 rgba(52,64,78,.3);display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.toolBtn .ic{font-size:22px}.toolBtn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(52,64,78,.3)}.toolBtn:disabled{opacity:.45}
+@media (max-width:420px){#title{font-size:36px}#homeCv{width:260px;height:130px}.toolBtn{min-width:72px;padding:6px 8px;font-size:14px}#botBar{gap:8px}#lvTitle{font-size:19px}}
+</style>
+</head>
+<body>
+<div id="home" class="screen">
+  <div id="homeIn">
+    <div id="title"></div>
+    <div id="subtitle">把同顏色倒進同一個瓶子</div>
+    <canvas id="homeCv"></canvas>
+    <div id="who">單機模式</div>
+    <button class="bigBtn" id="bCamp"><span class="ic">🧪</span><span><b>闖關模式</b><small id="campSub">第 1 關</small></span></button>
+    <button class="bigBtn" id="bDaily"><span class="ic">📅</span><span><b>每日挑戰</b><small id="dailySub">每天一題，比誰最快</small></span></button>
+    <button class="bigBtn" id="bRace"><span class="ic">⚔️</span><span><b>連線對戰</b><small>同一題，看誰先排好</small></span></button>
+    <div class="smallRow">
+      <button id="bHall">🏠 大廳</button>
+      <button id="bRank">🏆 排行</button>
+      <button id="bHelp">❓ 說明</button>
+      <button id="bSound"></button>
+    </div>
+    <div class="mgCredit">遊戲製作：Eric Hu</div>
+  </div>
+</div>
+<div id="game" class="screen hidden">
+  <div id="topBar">
+    <button class="iconBtn" id="bBack" title="返回">⬅️</button>
+    <div id="lvTitle">第 1 關</div>
+    <button class="iconBtn" id="bSound2"></button>
+  </div>
+  <div id="stats"><span id="sTime">⏱ 0:00</span><span id="sMoves">步數 0</span></div>
+  <div id="stage"><canvas id="cv"></canvas><div id="raceBox" class="raceBox hidden"></div><div id="countdown" class="hidden"></div></div>
+  <div id="botBar">
+    <button class="toolBtn" id="bUndo"><span class="ic">↩️</span>復原</button>
+    <button class="toolBtn" id="bRestart"><span class="ic">🔄</span>重來</button>
+    <button class="toolBtn" id="bAdd"><span class="ic">➕</span>加空瓶</button>
+  </div>
+</div>
+<script src="common.js"></script>
+<script src="watersort-core.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = MG.$, store = MG.store, fmtT = MG.fmtT, fmtT2 = MG.fmtT2;
+var COLORS = ['#a8323b', '#f7c41f', '#f47a1c', '#f2f1ec', '#6a9a1a', '#d75cb3', '#3c7ee0', '#7a4fc9', '#2fb5a5', '#8b5a2b'];
+function mix(hex, t) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 'rgb(' + Math.round(r + (255 - r) * t) + ',' + Math.round(g + (255 - g) * t) + ',' + Math.round(b + (255 - b) * t) + ')'; }
+var LIGHT = COLORS.map(function (c) { return mix(c, 0.38); }); LIGHT[3] = '#ffffff';
+var sfx = {
+  select: function () { MG.tone(660, 0.06, 'triangle', 0.05); },
+  bloop: function (p) { MG.tone(260 + p * 420 + Math.random() * 60, 0.07, 'sine', 0.05, 1.5); },
+  cork: function () { MG.noise(0.08, 0.5, 1800); MG.tone(520, 0.1, 'triangle', 0.06, 1.8); }
+};
+
+// ---------- 瓶子繪製 ----------
+var U = 0.6;
+function geo(w) { var bodyH = 4 * U * w + w * 0.16, sh = w * 0.3, nh = w * 0.2; return { bodyH: bodyH, sh: sh, nh: nh, H: bodyH + sh + nh + w * 0.06, y0: -w * 0.045 }; }
+function bottlePath(ctx, w, inset) {
+  var g = geo(w), hw = w / 2 - inset, r = w * 0.2, nw = w * 0.27 - inset, top = -g.bodyH - g.sh - g.nh, by = -inset;
+  ctx.beginPath(); ctx.moveTo(-nw, top); ctx.lineTo(-nw, -g.bodyH - g.sh);
+  ctx.bezierCurveTo(-nw, -g.bodyH - g.sh * 0.4, -hw, -g.bodyH - g.sh * 0.6, -hw, -g.bodyH);
+  ctx.lineTo(-hw, by - r); ctx.quadraticCurveTo(-hw, by, -hw + r, by); ctx.lineTo(hw - r, by); ctx.quadraticCurveTo(hw, by, hw, by - r);
+  ctx.lineTo(hw, -g.bodyH); ctx.bezierCurveTo(hw, -g.bodyH - g.sh * 0.6, nw, -g.bodyH - g.sh * 0.4, nw, -g.bodyH - g.sh);
+  ctx.lineTo(nw, top); ctx.closePath();
+}
+function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function drawBottle(ctx, x, y, w, segs, ang, cork, glow) {
+  var g = geo(w), sw = Math.max(1.5, w * 0.035);
+  ctx.save(); ctx.translate(x, y); if (ang) ctx.rotate(ang);
+  bottlePath(ctx, w, 0); ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fill();
+  ctx.save(); bottlePath(ctx, w, sw * 0.6); ctx.clip();
+  var t = Math.tan(ang || 0), X = w * 2, level = 0;
+  var lineY = function (L, xx) { return g.y0 - L * U * w - xx * t; };
+  for (var i = 0; i < segs.length; i++) {
+    var c = segs[i][0], a = segs[i][1]; if (a <= 0.001) continue;
+    var L0 = level, L1 = level + a; level = L1;
+    ctx.beginPath(); ctx.moveTo(-X, i === 0 ? w * 2 : lineY(L0, -X)); ctx.lineTo(X, i === 0 ? w * 2 : lineY(L0, X));
+    ctx.lineTo(X, lineY(L1, X)); ctx.lineTo(-X, lineY(L1, -X)); ctx.closePath(); ctx.fillStyle = COLORS[c]; ctx.fill();
+  }
+  if (level > 0.001 && !ang) { var top = segs[segs.length - 1][0]; ctx.beginPath(); ctx.ellipse(0, lineY(level, 0), w / 2, w * 0.085, 0, 0, Math.PI * 2); ctx.fillStyle = LIGHT[top]; ctx.fill(); }
+  var gr = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+  gr.addColorStop(0, 'rgba(255,255,255,0.10)'); gr.addColorStop(0.6, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.13)');
+  ctx.fillStyle = gr; ctx.fillRect(-w, -g.H - w, w * 2, g.H + w * 2); ctx.restore();
+  ctx.save(); bottlePath(ctx, w, sw); ctx.clip();
+  ctx.fillStyle = 'rgba(255,255,255,0.42)'; rrect(ctx, w * 0.24, -g.bodyH + w * 0.05, w * 0.075, g.bodyH - w * 0.3, w * 0.04); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.25)'; rrect(ctx, w * 0.08, -g.bodyH - g.sh - g.nh + w * 0.03, w * 0.05, g.nh + g.sh * 0.5, w * 0.025); ctx.fill();
+  ctx.restore();
+  bottlePath(ctx, w, 0); ctx.lineWidth = sw; ctx.strokeStyle = glow ? '#fff7c2' : '#56606e'; ctx.lineJoin = 'round'; ctx.stroke();
+  if (glow) { ctx.lineWidth = sw * 0.5; ctx.strokeStyle = '#56606e'; ctx.stroke(); }
+  var nw = w * 0.27, lipY = -g.bodyH - g.sh - g.nh;
+  rrect(ctx, -nw - w * 0.04, lipY - w * 0.05, (nw + w * 0.04) * 2, w * 0.09, w * 0.045);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fill(); ctx.lineWidth = sw * 0.9; ctx.strokeStyle = '#56606e'; ctx.stroke();
+  if (cork > 0) {
+    var e = 1 - Math.pow(1 - Math.min(1, cork), 3), cy = lipY - w * 0.32 - (1 - e) * w * 0.6, cw = nw * 2 + w * 0.06;
+    ctx.globalAlpha = Math.min(1, cork * 2);
+    ctx.fillStyle = '#c98443'; rrect(ctx, -cw / 2, cy, cw, w * 0.4, w * 0.08); ctx.fill();
+    ctx.fillStyle = '#e0a463'; ctx.beginPath(); ctx.ellipse(0, cy + w * 0.02, cw / 2, w * 0.07, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(120,70,30,0.45)';
+    [[-0.15, 0.17], [0.1, 0.25], [0.18, 0.14], [-0.05, 0.31], [-0.2, 0.28]].forEach(function (d) { ctx.beginPath(); ctx.arc(d[0] * w, cy + d[1] * w, w * 0.022, 0, Math.PI * 2); ctx.fill(); });
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+function segsOf(b) { var out = []; for (var i = 0; i < b.length; i++) { if (out.length && out[out.length - 1][0] === b[i]) out[out.length - 1][1]++; else out.push([b[i], 1]); } return out; }
+(function () {
+  var t = '繽紛倒水瓶', cs = ['#a8323b', '#f47a1c', '#d9a400', '#6a9a1a', '#d75cb3'];
+  $('title').innerHTML = t.split('').map(function (ch, i) { return '<span style="color:' + cs[i] + ';transform:rotate(' + (i % 2 ? 4 : -4) + 'deg)">' + ch + '</span>'; }).join('');
+})();
+function drawHome() {
+  var cv = $('homeCv'), dpr = Math.min(2, window.devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+  if (!W) return;
+  cv.width = W * dpr; cv.height = H * dpr;
+  var ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  var w = Math.min(W / 6.4, (H - 10) / (geo(1).H + 0.4)), data = [[0, 0, 0, 0], [1, 2, 1, 3], [4, 4, 4, 4], [5, 3, 0, 1], [2, 2, 2, 2]];
+  for (var i = 0; i < 5; i++) drawBottle(ctx, W / 2 + (i - 2) * w * 1.25, H - 4, w, segsOf(data[i]), 0, WS.isFullOne(data[i]) ? 1 : 0, false);
+}
+
+// ---------- 遊戲狀態 ----------
+var cv = $('cv'), ctx = cv.getContext('2d'), stageEl = $('stage');
+var mode = 'campaign', curLevel = 1, start = [], bs = [], moves = [], sel = -1, anims = [], corkAt = [], lift = [], shakeAt = [];
+var t0 = 0, playing = false, finished = false, raceLocked = false, layout = { w: 60, pos: [] }, dailyDay = '', finishMs = 0;
+var inRace = false, raceOver = false, raceStart = 0, raceLimit = 0, myDoneMs = 0, lastCount = -1;
+function persist() {
+  if ((mode !== 'campaign' && mode !== 'daily') || !playing || finished || !moves.length) return;
+  MG.saveGame('ws', { mode: mode, level: curLevel, day: dailyDay, moves: moves, el: t0 ? Date.now() - t0 : 0 });
+}
+function savedFor(m) {
+  var sv = MG.loadGame('ws'); if (!sv || sv.mode !== m) return null;
+  if (m === 'campaign' && sv.level !== myLevel()) return null;
+  if (m === 'daily' && sv.day !== MG.today()) return null;
+  return sv;
+}
+function applySave(sv) {
+  for (var k = 0; k < sv.moves.length; k++) {
+    var m = sv.moves[k];
+    if (m === 'a') { bs.push([]); corkAt.push(null); lift.push(0); shakeAt.push(-9); }
+    else if (WS.canPour(bs, m[0], m[1])) WS.pour(bs, m[0], m[1]); else break;
+    moves.push(m);
+  }
+  t0 = Date.now() - (sv.el || 0); computeLayout(); updateStats(); updateButtons();
+  MG.toast('已接續上次的進度', 1800);
+}
+function busy(i) { for (var k = 0; k < anims.length; k++) if (anims[k].s === i || anims[k].d === i) return true; return false; }
+function computeLayout() {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight, n = bs.length, best = null, Hr = geo(1).H + 0.75, padX = 12, padTop = mode === 'race' ? 8 : 4;
+  for (var c = 1; c <= n; c++) { var rows = Math.ceil(n / c), w = Math.min((W - padX * 2) / (c * 1.22), (H - padTop - 10) / (rows * Hr)); if (!best || w > best.w + 0.01) best = { w: w, c: c, rows: rows }; }
+  var w2 = Math.min(best.w, 110), cc = best.c, rws = best.rows, rowH = w2 * Hr, oy = Math.max(padTop, (H - rws * rowH) / 2), pos = [];
+  for (var i = 0; i < n; i++) { var r = Math.floor(i / cc), inRow = Math.min(cc, n - r * cc), col = i - r * cc, gap = w2 * 1.22, x0 = W / 2 - (inRow - 1) * gap / 2; pos.push({ x: x0 + col * gap, y: oy + (r + 1) * rowH - w2 * 0.12 }); }
+  layout = { w: w2, pos: pos, rows: rws, rowH: rowH, c: cc };
+}
+function resize() {
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = stageEl.clientWidth * dpr; cv.height = stageEl.clientHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (bs.length) computeLayout();
+  if (!$('home').classList.contains('hidden')) drawHome();
+}
+window.addEventListener('resize', resize);
+function setupLevel(level) {
+  start = WS.clone(level); bs = WS.clone(level); moves = []; sel = -1; anims = [];
+  corkAt = bs.map(function () { return null; }); lift = bs.map(function () { return 0; }); shakeAt = bs.map(function () { return -9; });
+  t0 = 0; finished = false; playing = true; computeLayout(); updateStats(); updateButtons();
+}
+function updateStats() {
+  $('sMoves').textContent = '步數 ' + moves.filter(function (m) { return m !== 'a'; }).length;
+  var ms = mode === 'race' ? (myDoneMs || (raceStart && Date.now() > raceStart ? Date.now() - raceStart : 0)) : (t0 ? (finished ? finishMs : Date.now() - t0) : 0);
+  $('sTime').textContent = '⏱ ' + fmtT(ms);
+}
+function updateButtons() { $('bUndo').disabled = !moves.length || finished; $('bAdd').disabled = moves.indexOf('a') >= 0 || finished; $('bRestart').disabled = finished; }
+function pourAnim(s, d) {
+  var n = WS.pourAmount(bs, s, d), color = bs[s][bs[s].length - 1], beforeS = bs[s].slice(), beforeD = bs[d].slice();
+  WS.pour(bs, s, d); moves.push([s, d]);
+  var dir = layout.pos[d].x >= layout.pos[s].x ? 1 : -1;
+  var a0 = (48 + (4 - beforeS.length) * 9) * Math.PI / 180, a1 = Math.min(86, 48 + (4 - beforeS.length + n) * 10) * Math.PI / 180;
+  anims.push({ s: s, d: d, n: n, color: color, beforeS: beforeS, beforeD: beforeD, t: 0, dir: dir, a0: a0, a1: a1, tm: 0.2, tp: 0.25 + n * 0.09, tr: 0.2, lastBloop: 0, liftStart: lift[s] });
+  if (!t0) t0 = Date.now();
+  if (mode === 'race' && MG.state.sock) MG.state.sock.emit('race:prog', { prog: WS.progress(bs) });
+  updateStats(); updateButtons(); persist();
+}
+function ease(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+function animState(a) {
+  var w = layout.w, g = geo(w), ps = layout.pos[a.s], pd = layout.pos[a.d], t = a.t, ang, phase, p = 0;
+  var mouthX = pd.x - a.dir * w * 0.2, mouthY = pd.y - g.H - w * 0.32, homeX = ps.x, homeY = ps.y - a.liftStart;
+  function baseFor(an) { var A = an * a.dir; return { x: mouthX - g.H * Math.sin(A), y: mouthY + g.H * Math.cos(A) }; }
+  var x, y;
+  if (t < a.tm) { phase = 0; var k = ease(t / a.tm); ang = a.a0 * k; var b = baseFor(a.a0); x = homeX + (b.x - homeX) * k; y = homeY + (b.y - homeY) * k; }
+  else if (t < a.tm + a.tp) { phase = 1; p = (t - a.tm) / a.tp; ang = a.a0 + (a.a1 - a.a0) * p; var b2 = baseFor(ang); x = b2.x; y = b2.y; }
+  else { phase = 2; p = 1; var k2 = ease(Math.min(1, (t - a.tm - a.tp) / a.tr)); ang = a.a1 * (1 - k2); var b3 = baseFor(a.a1); x = b3.x + (ps.x - b3.x) * k2; y = b3.y + (ps.y - b3.y) * k2; }
+  var srcSegs = segsOf(a.beforeS), rem = a.n * p;
+  if (srcSegs.length) { srcSegs[srcSegs.length - 1][1] -= rem; if (srcSegs[srcSegs.length - 1][1] <= 0.001) srcSegs.pop(); }
+  var dstSegs = segsOf(a.beforeD);
+  if (p > 0) { if (dstSegs.length && dstSegs[dstSegs.length - 1][0] === a.color) dstSegs[dstSegs.length - 1][1] += a.n * p; else dstSegs.push([a.color, a.n * p]); }
+  return { x: x, y: y, ang: ang * a.dir, phase: phase, p: p, srcSegs: srcSegs, dstSegs: dstSegs, mouthX: mouthX, mouthY: mouthY };
+}
+function hitBottle(px, py) {
+  var w = layout.w, g = geo(w);
+  for (var i = 0; i < bs.length; i++) { var p = layout.pos[i]; if (px > p.x - w * 0.62 && px < p.x + w * 0.62 && py > p.y - g.H - lift[i] - w * 0.4 && py < p.y + w * 0.15) return i; }
+  return -1;
+}
+cv.addEventListener('pointerdown', function (e) {
+  MG.unlock();
+  if (!playing || finished || raceLocked) return;
+  var r = cv.getBoundingClientRect(), i = hitBottle(e.clientX - r.left, e.clientY - r.top);
+  if (i < 0) { sel = -1; return; }
+  if (busy(i)) return;
+  if (sel < 0) { if (!bs[i].length || WS.isFullOne(bs[i])) { shakeAt[i] = performance.now(); MG.sfx.err(); return; } sel = i; sfx.select(); return; }
+  if (sel === i) { sel = -1; return; }
+  if (WS.canPour(bs, sel, i)) { var s = sel; sel = -1; pourAnim(s, i); return; }
+  if (bs[i].length && !WS.isFullOne(bs[i])) { sel = i; sfx.select(); return; }
+  shakeAt[i] = performance.now(); MG.sfx.err();
+});
+function undo() {
+  if (!moves.length || finished || anims.length) return;
+  var m = moves.pop();
+  if (m === 'a') { bs.pop(); corkAt.pop(); lift.pop(); shakeAt.pop(); computeLayout(); }
+  else { var replay = WS.clone(start); for (var k = 0; k < moves.length; k++) { if (moves[k] === 'a') replay.push([]); else WS.pour(replay, moves[k][0], moves[k][1]); } bs = replay; }
+  sel = -1; MG.sfx.undo(); updateStats(); updateButtons(); persist();
+  if (mode === 'race' && MG.state.sock) MG.state.sock.emit('race:prog', { prog: WS.progress(bs) });
+}
+function addBottle() {
+  if (finished || moves.indexOf('a') >= 0) return;
+  bs.push([]); moves.push('a'); corkAt.push(null); lift.push(0); shakeAt.push(-9);
+  computeLayout(); sfx.select(); updateButtons(); persist(); MG.toast('多了一個空瓶（每關限用一次）');
+}
+function restart() { if (finished || !moves.length) return; var keep = t0; setupLevel(start); t0 = keep; MG.sfx.undo(); if (mode !== 'race') MG.saveGame('ws', { mode: mode, level: curLevel, day: dailyDay, moves: [], el: keep ? Date.now() - keep : 0 }); }
+$('bUndo').onclick = function () { MG.unlock(); undo(); };
+$('bAdd').onclick = function () { MG.unlock(); addBottle(); };
+$('bRestart').onclick = function () { MG.unlock(); restart(); };
+
+var lastT = performance.now(), lastStat = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  var dt = Math.min(0.05, (now - lastT) / 1000); lastT = now;
+  if ($('game').classList.contains('hidden')) return;
+  for (var k = anims.length - 1; k >= 0; k--) {
+    var a = anims[k]; a.t += dt;
+    if (a.t > a.tm && a.t < a.tm + a.tp && now - a.lastBloop > 75) { a.lastBloop = now; sfx.bloop(((a.t - a.tm) / a.tp + a.beforeD.length / 4) / 2); }
+    if (a.t >= a.tm + a.tp + a.tr) { anims.splice(k, 1); lift[a.s] = 0; }
+  }
+  for (var i = 0; i < bs.length; i++) { if (WS.isFullOne(bs[i]) && !busy(i)) { if (corkAt[i] == null) { corkAt[i] = now; setTimeout(sfx.cork, 120); } } else corkAt[i] = null; }
+  if (playing && !finished && anims.length === 0 && WS.solved(bs)) onSolved();
+  if (now - lastStat > 250) { lastStat = now; updateStats(); }
+  render(now, dt);
+}
+function render(now, dt) {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight, w = layout.w, g = geo(w);
+  ctx.clearRect(0, 0, W, H);
+  if (layout.rows) for (var r = 0; r < layout.rows; r++) {
+    var yy = layout.pos[Math.min(bs.length - 1, r * layout.c)].y + w * 0.04, inRow = Math.min(layout.c, bs.length - r * layout.c), sw = (inRow - 1) * w * 1.22 + w * 1.6;
+    ctx.fillStyle = 'rgba(80,100,80,0.18)'; rrect(ctx, W / 2 - sw / 2, yy, sw, w * 0.1, w * 0.05); ctx.fill();
+  }
+  var animating = {};
+  anims.forEach(function (a) { animating[a.s] = a; animating['d' + a.d] = a; });
+  for (var i = 0; i < bs.length; i++) {
+    if (animating[i]) continue;
+    var target = sel === i ? w * 0.3 : 0; lift[i] += (target - lift[i]) * Math.min(1, dt * 18);
+    var p = layout.pos[i], sx = 0, st = (now - shakeAt[i]) / 1000;
+    if (st < 0.3) sx = Math.sin(st * 60) * w * 0.06 * (1 - st / 0.3);
+    var segs = animating['d' + i] ? animState(animating['d' + i]).dstSegs : segsOf(bs[i]);
+    drawBottle(ctx, p.x + sx, p.y - lift[i], w, segs, 0, corkAt[i] != null ? Math.min(1, (now - corkAt[i]) / 260) : 0, sel === i);
+  }
+  anims.forEach(function (a) {
+    var s = animState(a);
+    if (s.phase === 1) {
+      var pd = layout.pos[a.d], surfY = pd.y + g.y0 - (a.beforeD.length + a.n * s.p) * U * w, sx = s.mouthX + a.dir * w * 0.12, wob = Math.sin(now / 40) * w * 0.012;
+      ctx.fillStyle = COLORS[a.color]; rrect(ctx, sx - w * 0.055 + wob, s.mouthY + w * 0.05, w * 0.11, Math.max(4, surfY - s.mouthY - w * 0.05), w * 0.05); ctx.fill();
+    }
+    drawBottle(ctx, s.x, s.y, w, s.srcSegs, s.ang, 0, false);
+  });
+}
+requestAnimationFrame(frame);
+if (/[?&]test=1/.test(location.search)) window.__wsTest = { get layout() { return layout; }, get bs() { return bs; }, get anims() { return anims; } };
+
+// ---------- 畫面切換 ----------
+function showScreen(name) { $('home').classList.toggle('hidden', name !== 'home'); $('game').classList.toggle('hidden', name !== 'game'); resize(); }
+MG.bindSound($('bSound'), true); MG.bindSound($('bSound2'), false);
+function lvKey() { return 'ws_level_' + (MG.state.acct ? MG.state.acct.name : 'guest'); }
+function myLevel() { return Math.max(1, store.get(lvKey()) || 1); }
+function setMyLevel(n) { store.set(lvKey(), Math.max(myLevel(), n)); }
+function dailyBestKey() { return 'ws_daily_' + MG.displayName() + '_' + MG.today(); }
+function refreshHome() {
+  var S = MG.state;
+  $('who').textContent = !S.online ? '單機模式（進度存在這台裝置）' : S.acct ? '👤 ' + S.acct.name : '👤 ' + S.guestName + '（訪客，回大廳可登入）';
+  $('campSub').textContent = '目前第 ' + myLevel() + ' 關' + (savedFor('campaign') ? '（有存檔，可接著玩）' : '');
+  var b = store.get(dailyBestKey()); $('dailySub').textContent = b ? '今日最佳 ' + fmtT2(b) : '每天一題，比誰最快';
+}
+function startCampaign() { mode = 'campaign'; curLevel = myLevel(); $('lvTitle').textContent = '第 ' + curLevel + ' 關'; $('raceBox').classList.add('hidden'); showScreen('game'); setupLevel(WS.campaign(curLevel)); var sv = savedFor('campaign'); if (sv) applySave(sv); }
+function startDaily() { mode = 'daily'; dailyDay = MG.today(); $('lvTitle').textContent = '每日挑戰 ' + dailyDay.slice(5).replace('-', '/'); $('raceBox').classList.add('hidden'); showScreen('game'); setupLevel(WS.daily(dailyDay)); var sv = savedFor('daily'); if (sv) applySave(sv); }
+function onSolved() {
+  finished = true; playing = false; finishMs = t0 ? Date.now() - t0 : 0; updateStats(); updateButtons();
+  setTimeout(MG.sfx.win, 250);
+  if (mode === 'race') return raceSolved();
+  MG.saveGame('ws', null);
+  var pours = moves.filter(function (m) { return m !== 'a'; }).length;
+  var stats = '<div class="mgStats"><div>' + fmtT2(finishMs) + '<small>時間</small></div><div>' + pours + '<small>步數</small></div></div>';
+  if (mode === 'campaign') {
+    setMyLevel(curLevel + 1);
+    MG.post('/api/clear', { game: 'ws', level: curLevel, moves: moves });
+    setTimeout(function () {
+      MG.showModal('<h2>🎉 第 ' + curLevel + ' 關 完成！</h2>' + stats + '<button class="mgBtn green" id="wNext">下一關 ▶</button><button class="mgBtn grey" id="wHome">回選單</button>', 'win');
+      $('wNext').onclick = function () { MG.closeModal(); startCampaign(); };
+      $('wHome').onclick = function () { MG.closeModal(); goHome(); };
+    }, 900);
+  } else {
+    var key = dailyBestKey(), old = store.get(key), isBest = !old || finishMs < old;
+    if (isBest) store.set(key, finishMs);
+    var S = MG.state, note = S.online && S.acct ? '成績已上傳到今日排行榜' : S.online ? '回大廳登入帳號才會列入排行榜' : '單機模式成績只存在這台裝置';
+    MG.post('/api/daily', { game: 'ws', day: dailyDay, ms: finishMs, moves: moves });
+    setTimeout(function () {
+      MG.showModal('<h2>🎉 每日挑戰完成！</h2>' + stats + '<p class="mgNote">' + (isBest ? '🏅 新的今日最佳！' : '今日最佳：' + fmtT2(old)) + '<br>' + note + '</p>' +
+        '<button class="mgBtn" id="wAgain">再挑戰一次</button>' + (S.online ? '<button class="mgBtn blue" id="wRank">看排行榜</button>' : '') + '<button class="mgBtn grey" id="wHome">回選單</button>', 'win');
+      $('wAgain').onclick = function () { MG.closeModal(); startDaily(); };
+      if ($('wRank')) $('wRank').onclick = function () { goHome(); MG.openRank('ws', 'daily'); };
+      $('wHome').onclick = function () { MG.closeModal(); goHome(); };
+    }, 900);
+  }
+}
+function goHome() { persist(); MG.flushSave('ws'); if (mode === 'race') MG.leaveRace(); inRace = false; raceLocked = false; playing = false; anims = []; showScreen('home'); refreshHome(); }
+$('bBack').onclick = function () {
+  if (mode === 'race' && inRace && !raceOver) {
+    MG.showModal('<h2>要離開對戰嗎？</h2><p style="text-align:center">離開就算放棄這一場。</p><button class="mgBtn" id="qStay">繼續比賽</button><button class="mgBtn grey" id="qLeave">離開</button>', 'confirm');
+    $('qStay').onclick = MG.closeModal; $('qLeave').onclick = function () { MG.closeModal(); goHome(); };
+    return;
+  }
+  goHome();
+};
+$('bCamp').onclick = function () { MG.unlock(); startCampaign(); };
+$('bDaily').onclick = function () { MG.unlock(); startDaily(); };
+$('bHall').onclick = function () { location.href = 'index.html'; };
+$('bRank').onclick = function () { MG.unlock(); MG.openRank('ws'); };
+
+// ---------- 連線對戰 ----------
+MG.raceSetup('ws', {
+  intro: '所有人拿到同一題，最先把顏色排好的人獲勝！',
+  begin: function (o) {
+    mode = 'race'; inRace = true; raceOver = false; myDoneMs = 0; lastCount = -1;
+    raceStart = Date.now() + o.startIn; raceLimit = o.limit;
+    $('lvTitle').textContent = '對戰・' + MG.DIFF[o.diff]; $('raceBox').classList.remove('hidden'); $('raceBox').innerHTML = '';
+    showScreen('game'); setupLevel(WS.race(o.seed, o.diff)); raceLocked = true; t0 = 0;
+  },
+  standings: function (l) { if (inRace) $('raceBox').innerHTML = MG.standingsHtml(l); },
+  end: function (o) {
+    if (!inRace) return; raceOver = true; inRace = false; $('countdown').classList.add('hidden');
+    MG.raceResult(o, '瓶', function () { playing = false; showScreen('home'); refreshHome(); }, goHome);
+  },
+  disconnected: function () { if (inRace) { MG.toast('連線中斷，對戰結束'); goHome(); } }
+});
+setInterval(function () {
+  if (!inRace || raceOver) return;
+  var now = Date.now(), cd = $('countdown');
+  if (now < raceStart) { var n = Math.ceil((raceStart - now) / 1000); cd.classList.remove('hidden'); cd.textContent = n; if (n !== lastCount) { lastCount = n; MG.sfx.tick(); } return; }
+  if (raceLocked && !myDoneMs && !finished) { raceLocked = false; t0 = raceStart; cd.textContent = '開始！'; MG.sfx.go(); setTimeout(function () { if (cd.textContent === '開始！') cd.classList.add('hidden'); }, 700); }
+  if (!myDoneMs && now - raceStart > raceLimit) { raceLocked = true; cd.classList.remove('hidden'); cd.textContent = '時間到！'; }
+}, 200);
+function raceSolved() {
+  raceLocked = true;
+  MG.state.sock.emit('race:done', { moves: moves }, function (r) {
+    if (r && r.ok) { myDoneMs = r.ms; updateStats(); $('countdown').classList.remove('hidden'); $('countdown').textContent = r.place === 1 ? '第一名！' : '第 ' + r.place + ' 名'; }
+    else MG.toast((r && r.error) || '送出失敗');
+  });
+}
+$('bRace').onclick = function () { MG.unlock(); MG.openRace(); };
+
+$('bHelp').onclick = function () {
+  MG.unlock();
+  MG.showModal('<h2>❓ 遊戲說明</h2><h3>🧪 怎麼玩</h3><ul>' +
+    '<li>點一個瓶子把它拿起來，再點另一個瓶子就會把最上層的顏色倒過去。</li>' +
+    '<li>只能倒進<b>空瓶</b>，或倒在<b>同顏色</b>上面，而且瓶子要有空位。</li>' +
+    '<li>同一個瓶子裝滿 4 格同顏色就會塞上軟木塞。所有瓶子都塞好就過關！</li></ul>' +
+    '<h3>🛠 小幫手</h3><ul><li><b>復原</b>：退回上一步，不限次數。</li><li><b>重來</b>：回到這關一開始。</li><li><b>加空瓶</b>：每關可以多拿一個空瓶，限用一次。</li></ul>' +
+    '<h3>🎮 模式</h3><ul><li><b>闖關模式</b>：一關比一關多瓶子、多顏色，最多 32 瓶。</li><li><b>每日挑戰</b>：每天一題，比誰最快。</li><li><b>連線對戰</b>：2～6 人同時解同一題，最先完成的人獲勝。</li></ul>' +
+    '<button class="mgBtn grey" id="hClose">關閉</button><div class="mgCredit">遊戲製作：Eric Hu</div>', 'help');
+  $('hClose').onclick = MG.closeModal;
+};
+
+resize(); refreshHome();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawHome);
+MG.init({ socket: true }).then(function (S) {
+  refreshHome();
+  if (!S.online) MG.toast('單機模式：排行榜與對戰需要連線版', 3000);
+  else if (S.acct && S.acct.stats && S.acct.stats.ws_level) setMyLevel(S.acct.stats.ws_level), refreshHome();
+  askResume();
+});
+document.addEventListener('visibilitychange', function () { if (document.hidden) { persist(); MG.flushSave('ws', true); } });
+window.addEventListener('pagehide', function () { persist(); MG.flushSave('ws', true); });
+function askResume() {
+  var c = savedFor('campaign'), d = savedFor('daily'), sv = c && d ? (c.t > d.t ? c : d) : (c || d);
+  if (!sv || !sv.moves || !sv.moves.length || MG.modalKind()) return;
+  var what = sv.mode === 'campaign' ? '闖關模式 第 ' + sv.level + ' 關' : '今天的每日挑戰';
+  MG.showModal('<h2>💾 繼續上次的遊戲？</h2><p style="text-align:center">' + what + '<br>已經走了 ' + sv.moves.length + ' 步、玩了 ' + fmtT(sv.el || 0) + '</p>' +
+    '<button class="mgBtn green" id="rsYes">繼續玩</button><button class="mgBtn grey" id="rsNo">先不要</button>', 'info');
+  $('rsYes').onclick = function () { MG.closeModal(); MG.unlock(); if (sv.mode === 'campaign') startCampaign(); else startDaily(); };
+  $('rsNo').onclick = MG.closeModal;
+}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>繽紛遊戲屋</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#2f3b4a;color:#fff;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC","Heiti TC",system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+body{background:radial-gradient(circle at 20% 10%,#4a5d78 0%,#2f3b4a 45%,#1f2833 100%) fixed}
+#wrap{max-width:980px;margin:0 auto;padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h1{margin:0;font-size:36px;font-weight:900;letter-spacing:3px;flex:1;min-width:220px}
+h1 span{display:inline-block}
+.sub{opacity:.75;font-weight:700;margin:0 0 18px}
+.acct{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 6px 5px 14px;font-weight:800;max-width:100%}
+.acct .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.pill{border:none;border-radius:999px;padding:8px 14px;font:inherit;font-weight:900;cursor:pointer;background:#f7c41f;color:#34404e}
+.pill.ghost{background:rgba(255,255,255,.18);color:#fff}
+#games{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.g{position:relative;border-radius:22px;overflow:hidden;cursor:pointer;box-shadow:0 8px 0 rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.3);transition:transform .15s;display:flex;flex-direction:column;text-decoration:none;color:inherit}
+.g:hover{transform:translateY(-3px)}.g:active{transform:translateY(3px)}
+.g canvas{width:100%;height:180px;display:block}
+.g .info{padding:12px 16px 14px;background:rgba(0,0,0,.28)}
+.g b{font-size:22px;display:block}.g small{font-size:14px;opacity:.85;font-weight:700}
+.g .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.g .tags span{font-size:12px;font-weight:800;background:rgba(255,255,255,.2);border-radius:999px;padding:3px 9px}
+#gWs{background:#b3c5b0;color:#34404e}#gWs .info{background:rgba(255,255,255,.35)}
+#gCr{background:radial-gradient(ellipse at center,#8a3424,#4a160f)}
+#gSc{background:linear-gradient(135deg,#f3bd7b,#e49b55);color:#4a2a12}#gSc .info{background:rgba(255,255,255,.3)}
+.row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.row button{flex:1;min-width:140px;border:none;border-radius:16px;padding:14px;font:inherit;font-weight:900;font-size:17px;cursor:pointer;background:rgba(255,255,255,.14);color:#fff}
+.row button:active{transform:translateY(2px)}
+.credit{text-align:center;margin-top:20px;opacity:.6;font-weight:800}
+@media (max-width:520px){h1{font-size:30px}.g canvas{height:150px}}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <h1 id="title">繽紛遊戲屋</h1>
+    <div class="acct"><span class="nm" id="who">單機模式</span><button class="pill" id="bLogin">登入</button></div>
+  </header>
+  <p class="sub" id="sub">三款益智小遊戲，手機電腦都能玩，還能和朋友連線比賽！</p>
+  <div id="games">
+    <a class="g" id="gWs" href="watersort.html"><canvas id="cvWs"></canvas><div class="info"><b>繽紛倒水瓶</b><small>把同顏色倒進同一個瓶子</small><div class="tags"><span>闖關</span><span>每日挑戰</span><span>連線搶快</span></div></div></a>
+    <a class="g" id="gCr" href="carrom.html"><canvas id="cvCr"></canvas><div class="info"><b>克朗棋</b><small>用母球把棋子彈進洞</small><div class="tags"><span>對戰電腦</span><span>雙人同樂</span><span>連線一對一</span></div></div></a>
+    <a class="g" id="gSc" href="screws.html"><canvas id="cvSc"></canvas><div class="info"><b>螺絲拆拆樂</b><small>轉下螺絲讓木板全部掉下來</small><div class="tags"><span>闖關</span><span>每日挑戰</span><span>連線搶快</span></div></div></a>
+  </div>
+  <div class="row">
+    <button id="bRank">🏆 排行榜</button>
+    <button id="bSound"></button>
+  </div>
+  <div class="credit">遊戲製作：Eric Hu</div>
+</div>
+<script src="common.js"></script>
+<script src="watersort-core.js"></script>
+<script src="carrom-core.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = MG.$;
+(function () {
+  var cs = ['#ff7b6b', '#ffb347', '#ffe066', '#9be15d', '#6fd3ff'];
+  $('title').innerHTML = '繽紛遊戲屋'.split('').map(function (c, i) { return '<span style="color:' + cs[i] + '">' + c + '</span>'; }).join('');
+})();
+function setup(id) { var c = $(id), dpr = Math.min(2, window.devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight; c.width = W * dpr; c.height = H * dpr; var x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); return [x, W, H]; }
+function rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function drawWs() {
+  var a = setup('cvWs'), c = a[0], W = a[1], H = a[2], cols = ['#a8323b', '#f7c41f', '#f47a1c', '#f2f1ec', '#6a9a1a', '#d75cb3'];
+  var data = [[0, 0, 0, 0], [1, 2, 5, 3], [4, 4, 4, 4], [5, 3, 0, 1], [2, 2, 1]], w = Math.min(W / 7, 46), u = w * 0.6;
+  data.forEach(function (b, i) {
+    var x = W / 2 + (i - 2) * w * 1.3, y = H - 14, bh = u * 4 + 8;
+    c.save(); rr(c, x - w / 2, y - bh, w, bh, w * 0.25); c.fillStyle = 'rgba(255,255,255,0.3)'; c.fill(); c.clip();
+    b.forEach(function (col, j) { c.fillStyle = cols[col]; c.fillRect(x - w / 2, y - 4 - (j + 1) * u, w, u + 0.5); });
+    c.restore(); rr(c, x - w / 2, y - bh, w, bh, w * 0.25); c.lineWidth = 2.5; c.strokeStyle = '#56606e'; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(x + w * 0.22, y - bh + 10, w * 0.08, bh - 22);
+    if (b.length === 4 && b.every(function (v) { return v === b[0]; })) { c.fillStyle = '#c98443'; rr(c, x - w * 0.3, y - bh - w * 0.35, w * 0.6, w * 0.4, 5); c.fill(); }
+  });
+}
+function drawCr() {
+  var a = setup('cvCr'), c = a[0], W = a[1], H = a[2], B = H - 20, k = B / 112, cx = W / 2, cy = H / 2;
+  c.save(); c.translate(cx, cy);
+  rr(c, -B / 2, -B / 2, B, B, 10); c.fillStyle = '#7a4a2a'; c.fill();
+  var g = c.createRadialGradient(0, 0, 4, 0, 0, B * 0.7); g.addColorStop(0, '#f6dcb4'); g.addColorStop(1, '#d9a873'); c.fillStyle = g; c.fillRect(-50 * k, -50 * k, 100 * k, 100 * k);
+  c.strokeStyle = '#b0533a'; c.lineWidth = 1.2; c.beginPath(); c.arc(0, 0, 16 * k, 0, Math.PI * 2); c.stroke();
+  CR.POCKETS.forEach(function (p) { c.beginPath(); c.arc(p[0] * k, p[1] * k, (CR.PR + 0.6) * k, 0, Math.PI * 2); c.fillStyle = '#111'; c.fill(); });
+  CR.newGame().p.forEach(function (p) {
+    c.beginPath(); c.arc(p.x * k, p.y * k, CR.CRAD * k, 0, Math.PI * 2); c.fillStyle = p.t === 'w' ? '#f4efe6' : p.t === 'b' ? '#3a3a3a' : '#d1342a'; c.fill(); c.lineWidth = 0.8; c.strokeStyle = 'rgba(0,0,0,0.4)'; c.stroke();
+  });
+  c.beginPath(); c.arc(0, CR.BASE * k, CR.SRAD * k, 0, Math.PI * 2); c.fillStyle = '#e8c49a'; c.fill(); c.stroke();
+  c.restore();
+}
+function drawSc() {
+  var a = setup('cvSc'), c = a[0], W = a[1], H = a[2], s = Math.min(46, H / 3.6);
+  function plank(x1, y1, x2, y2, col, bd) {
+    var dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ang = Math.atan2(dy, dx), hw = s * 0.32;
+    c.save(); c.translate(x1, y1); c.rotate(ang); c.shadowColor = 'rgba(60,25,0,0.35)'; c.shadowBlur = 6; c.shadowOffsetY = 4;
+    c.beginPath(); c.moveTo(0, -hw); c.lineTo(L, -hw); c.arc(L, 0, hw, -Math.PI / 2, Math.PI / 2); c.lineTo(0, hw); c.arc(0, 0, hw, Math.PI / 2, Math.PI * 1.5); c.closePath();
+    c.fillStyle = col; c.fill(); c.shadowColor = 'transparent'; c.lineWidth = 2.5; c.strokeStyle = bd; c.stroke(); c.restore();
+  }
+  function screw(x, y) { c.beginPath(); c.arc(x, y, s * 0.2, 0, Math.PI * 2); c.fillStyle = '#e8b46e'; c.fill(); c.lineWidth = 2; c.strokeStyle = '#7a4a18'; c.stroke(); c.fillStyle = '#7a4a18'; c.fillRect(x - s * 0.12, y - s * 0.03, s * 0.24, s * 0.06); c.fillRect(x - s * 0.03, y - s * 0.12, s * 0.06, s * 0.24); }
+  var cx = W / 2, cy = H / 2;
+  plank(cx - s * 2.2, cy - s * 0.8, cx + s * 1.5, cy - s * 0.8, '#b5651d', '#7a3f0e'); screw(cx - s * 2.2, cy - s * 0.8); screw(cx + s * 1.5, cy - s * 0.8);
+  plank(cx + s * 0.4, cy - s * 1.5, cx + s * 1.9, cy + s * 1.3, '#dba35c', '#9c6a2c'); screw(cx + s * 0.4, cy - s * 1.5);
+  plank(cx - s * 1.6, cy + s * 1.2, cx + s * 0.2, cy + s * 0.5, '#a0482a', '#6a2a14'); screw(cx - s * 1.6, cy + s * 1.2); screw(cx + s * 0.2, cy + s * 0.5);
+}
+function drawAll() { drawWs(); drawCr(); drawSc(); }
+window.addEventListener('resize', drawAll);
+
+function refresh() {
+  var S = MG.state;
+  if (!S.online) { $('who').textContent = '單機模式'; $('bLogin').style.display = 'none'; $('sub').textContent = '目前是單機模式：排行榜和連線對戰要部署到伺服器後才能使用。'; return; }
+  $('bLogin').style.display = '';
+  if (S.acct) { $('who').textContent = '👤 ' + S.acct.name; $('bLogin').textContent = '登出'; $('bLogin').className = 'pill ghost'; }
+  else { $('who').textContent = '👤 ' + S.guestName + '（訪客）'; $('bLogin').textContent = '登入'; $('bLogin').className = 'pill'; }
+}
+function showLogin() {
+  MG.showModal('<h2>🎮 登入繽紛遊戲屋</h2><p style="text-align:center;margin:0 0 6px">一個帳號三款遊戲共用<br><span class="mgNote">第一次輸入就是建立新帳號，請記住你的密碼</span></p>' +
+    '<input class="mgInp" id="lgName" maxlength="12" placeholder="暱稱（最多 12 字）"><input class="mgInp" id="lgPin" type="password" inputmode="numeric" maxlength="8" placeholder="密碼（4～8 位數字）">' +
+    '<div class="mgErr" id="lgErr"></div><button class="mgBtn" id="lgGo">登入 / 建立帳號</button><button class="mgBtn grey" id="lgGuest">先用訪客身分玩</button><div class="mgCredit">遊戲製作：Eric Hu</div>', 'login');
+  function go() {
+    MG.unlock();
+    var name = $('lgName').value.trim(), pin = $('lgPin').value.trim();
+    if (!name) { $('lgErr').textContent = '請輸入暱稱'; return; }
+    if (!/^\d{4,8}$/.test(pin)) { $('lgErr').textContent = '密碼請輸入 4～8 位數字'; return; }
+    $('lgGo').disabled = true; $('lgErr').textContent = '';
+    MG.login(name, pin).then(function (r) {
+      if (!r.ok) { $('lgErr').textContent = r.error || '登入失敗'; $('lgGo').disabled = false; return; }
+      if (r.stats) { if (r.stats.ws_level) MG.store.set('ws_level_' + r.name, r.stats.ws_level); if (r.stats.sc_level) MG.store.set('sc_level_' + r.name, r.stats.sc_level); }
+      MG.closeModal(); refresh(); MG.toast(r.isNew ? '帳號建立成功，歡迎 ' + r.name + '！' : '歡迎回來，' + r.name + '！');
+    }).catch(function () { $('lgErr').textContent = '連線失敗，請稍後再試'; $('lgGo').disabled = false; });
+  }
+  $('lgGo').onclick = go; $('lgPin').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+  $('lgGuest').onclick = function () { MG.closeModal(); MG.store.set('mg_asked', true); };
+}
+$('bLogin').onclick = function () { MG.unlock(); if (MG.state.acct) { MG.logout(); refresh(); MG.toast('已登出'); } else showLogin(); };
+$('bRank').onclick = function () {
+  MG.unlock();
+  MG.showModal('<h2>🏆 排行榜</h2><p class="mgNote">要看哪一款遊戲？</p><button class="mgBtn green" data-g="ws">繽紛倒水瓶</button><button class="mgBtn" data-g="cr">克朗棋</button><button class="mgBtn pink" data-g="sc">螺絲拆拆樂</button><button class="mgBtn grey" id="rkX">關閉</button>', 'info');
+  document.querySelectorAll('#mgModal [data-g]').forEach(function (b) { b.onclick = function () { MG.openRank(b.dataset.g); }; });
+  $('rkX').onclick = MG.closeModal;
+};
+MG.bindSound($('bSound'), true);
+drawAll();
+MG.init().then(function (S) {
+  refresh();
+  if (S.online && S.acct && S.acct.stats) { if (S.acct.stats.ws_level) MG.store.set('ws_level_' + S.acct.name, Math.max(MG.store.get('ws_level_' + S.acct.name) || 1, S.acct.stats.ws_level)); if (S.acct.stats.sc_level) MG.store.set('sc_level_' + S.acct.name, Math.max(MG.store.get('sc_level_' + S.acct.name) || 1, S.acct.stats.sc_level)); }
+  if (S.online && !S.acct && !MG.store.get('mg_asked')) showLogin();
+});
+})();
+</script>
+</body>
+</html>

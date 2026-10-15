@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>螺絲拆拆樂</title>
+<style>
+:root{--ink:#4a2a12;--cream:#fff3dd;--wood:#e9a75f;--wood2:#c97b3c;--dark:#7a4318}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--wood);color:var(--ink);
+  font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC","Heiti TC",system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.hidden{display:none!important}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;z-index:1}
+#home{align-items:center;justify-content:center;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));overflow-y:auto}
+#homeIn{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center}
+#title{font-size:42px;font-weight:900;letter-spacing:4px;color:#fff;text-shadow:0 3px 0 var(--dark),0 0 1px var(--dark),2px 0 0 var(--dark),-2px 0 0 var(--dark),0 -2px 0 var(--dark);text-align:center}
+#subtitle{margin:4px 0 4px;font-weight:800;color:var(--dark)}
+#homeCv{width:300px;height:140px;margin:4px 0 8px}
+#who{font-size:14px;font-weight:800;background:rgba(255,243,221,.75);border:2px solid var(--dark);border-radius:999px;padding:4px 14px;margin-bottom:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.woodBtn{border:3px solid #5a2f0e;background:linear-gradient(#d68a45,#b8692c);color:#fff;text-shadow:0 2px 0 #6b3a14;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 5px 0 #5a2f0e;cursor:pointer;font:inherit}
+.woodBtn:active{transform:translateY(4px);box-shadow:inset 0 2px 0 rgba(255,255,255,.35),0 1px 0 #5a2f0e}
+.bigBtn{width:100%;display:flex;align-items:center;gap:12px;border-radius:18px;padding:12px 16px;margin-bottom:12px;text-align:left}
+.bigBtn .ic{font-size:30px;width:42px;text-align:center}.bigBtn b{font-size:20px;display:block}.bigBtn small{font-size:13px;opacity:.9;font-weight:700}
+.smallRow{display:flex;gap:8px;width:100%}
+.smallRow button{flex:1;border-radius:14px;padding:9px 4px;font-weight:800;font-size:15px}
+#topBar{display:flex;align-items:center;gap:8px;padding:10px 10px 4px;padding-top:calc(10px + env(safe-area-inset-top))}
+.iconBtn{width:48px;height:48px;border-radius:14px;font-size:21px;display:grid;place-items:center;padding:0;flex:none}
+#lvBox{flex:1;display:flex;justify-content:center;gap:8px;align-items:center;min-width:0}
+.plate{background:linear-gradient(#a85f2a,#7d4219);border:3px solid #4d270b;border-radius:12px;color:#fff;font-weight:900;padding:5px 14px;text-shadow:0 2px 0 #4d270b;box-shadow:inset 0 2px 0 rgba(255,255,255,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lvTitle{font-size:19px}#sTime{font-size:19px;background:linear-gradient(#6b3a14,#4d270b);border-radius:999px}
+#sTime.warn{color:#ffb3a6}
+#sLeft{text-align:center;font-weight:900;color:var(--dark);font-size:14px;margin-top:2px}
+#stage{position:relative;flex:1;min-height:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer}
+.raceBox{position:absolute;top:6px;right:8px;background:rgba(255,243,221,.94);border:2px solid var(--dark);border-radius:12px;padding:6px 10px;font-size:13px;font-weight:800;min-width:150px;max-width:46vw;pointer-events:none;z-index:2}
+.raceBox .r{display:flex;align-items:center;gap:6px;margin:2px 0}.raceBox .r .n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.raceBox .bar{width:50px;height:8px;background:#ddd;border-radius:4px;overflow:hidden;flex:none}.raceBox .bar i{display:block;height:100%;background:#6a9a1a}.raceBox .me{color:#c2410c}
+#countdown{position:absolute;inset:0;display:grid;place-items:center;font-size:100px;font-weight:900;color:#fff;text-shadow:0 6px 0 var(--dark);pointer-events:none;background:rgba(80,40,10,.15);z-index:3}
+#modeTip{position:absolute;left:50%;top:6px;transform:translateX(-50%);background:#4d270b;color:#fff;font-weight:800;border-radius:999px;padding:6px 14px;font-size:14px;z-index:2;white-space:nowrap}
+#botBar{display:flex;justify-content:center;gap:12px;padding:8px 10px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.toolBtn{border-radius:16px;font-weight:900;font-size:14px;padding:6px 10px;min-width:74px;display:flex;flex-direction:column;align-items:center;line-height:1.25}
+.toolBtn .ic{font-size:24px}.toolBtn:disabled{opacity:.45;filter:grayscale(.6)}
+.toolBtn.on{background:linear-gradient(#ffd27a,#f0a83a);color:#5a2f0e;text-shadow:none}
+.toolBtn .cnt{font-size:11px;opacity:.9}
+@media (max-width:420px){#title{font-size:36px}.toolBtn{min-width:64px;padding:5px 6px;font-size:13px}#botBar{gap:7px}#lvTitle,#sTime{font-size:16px}.plate{padding:4px 10px}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="home" class="screen">
+  <div id="homeIn">
+    <div id="title">螺絲拆拆樂</div>
+    <div id="subtitle">轉下螺絲，讓所有木板掉下來</div>
+    <canvas id="homeCv"></canvas>
+    <div id="who">單機模式</div>
+    <button class="bigBtn woodBtn" id="bCamp"><span class="ic">🔩</span><span><b>闖關模式</b><small id="campSub">第 1 關</small></span></button>
+    <button class="bigBtn woodBtn" id="bDaily"><span class="ic">📅</span><span><b>每日挑戰</b><small id="dailySub">每天一題，比誰最快</small></span></button>
+    <button class="bigBtn woodBtn" id="bRace"><span class="ic">⚔️</span><span><b>連線對戰</b><small>同一題，看誰先拆完</small></span></button>
+    <div class="smallRow">
+      <button class="woodBtn" id="bHall">🏠 大廳</button>
+      <button class="woodBtn" id="bRank">🏆 排行</button>
+      <button class="woodBtn" id="bHelp">❓ 說明</button>
+      <button class="woodBtn" id="bSound"></button>
+    </div>
+    <div class="mgCredit" style="color:#5a2f0e;opacity:.85">遊戲製作：Eric Hu</div>
+  </div>
+</div>
+<div id="game" class="screen hidden">
+  <div id="topBar">
+    <button class="iconBtn woodBtn" id="bBack">⬅️</button>
+    <div id="lvBox"><div class="plate" id="lvTitle">第 1 關</div><div class="plate" id="sTime">0:00</div></div>
+    <button class="iconBtn woodBtn" id="bSound2"></button>
+  </div>
+  <div id="sLeft">剩下 0 塊木板</div>
+  <div id="stage"><canvas id="cv"></canvas><div id="raceBox" class="raceBox hidden"></div><div id="modeTip" class="hidden"></div><div id="countdown" class="hidden"></div></div>
+  <div id="botBar">
+    <button class="toolBtn woodBtn" id="bUndo"><span class="ic">↩️</span>復原</button>
+    <button class="toolBtn woodBtn" id="bHammer"><span class="ic">🔨</span>鎚子<span class="cnt">打掉一塊</span></button>
+    <button class="toolBtn woodBtn" id="bDrill"><span class="ic">🪛</span>電鑽<span class="cnt">多鑽一個洞</span></button>
+    <button class="toolBtn woodBtn" id="bRestart"><span class="ic">🔄</span>重來</button>
+  </div>
+</div>
+<script src="common.js"></script>
+<script src="screws-core.js"></script>
+<script>
+(function () {
+'use strict';
+var $ = MG.$, store = MG.store, fmtT = MG.fmtT, fmtT2 = MG.fmtT2;
+var PLANK = [['#b5651d', '#7a3f0e'], ['#cf8546', '#8f5520'], ['#a0482a', '#6a2a14'], ['#dba35c', '#9c6a2c'], ['#8f5a3a', '#5a3218'], ['#c2603a', '#83381a'], ['#e3b877', '#a8803f']];
+var sfx = {
+  pick: function () { MG.tone(520, 0.08, 'triangle', 0.05, 1.6); setTimeout(function () { MG.tone(700, 0.08, 'triangle', 0.05, 1.6); }, 70); },
+  place: function () { MG.tone(900, 0.07, 'triangle', 0.05, 0.6); setTimeout(function () { MG.noise(0.05, 0.25, 2500); }, 60); },
+  fall: function () { MG.noise(0.25, 0.6, 220, 0.7); MG.tone(120, 0.25, 'sine', 0.08, 0.5); },
+  swing: function () { MG.tone(300, 0.2, 'sine', 0.03, 0.8); },
+  smash: function () { MG.noise(0.35, 0.8, 400, 0.5); MG.noise(0.15, 0.5, 1500); },
+  drill: function () { for (var i = 0; i < 6; i++) setTimeout(function () { MG.tone(180 + Math.random() * 40, 0.07, 'sawtooth', 0.03); }, i * 55); }
+};
+
+// ---------- 木紋背景 ----------
+function drawBg() {
+  var c = $('bg'), W = window.innerWidth, H = window.innerHeight, dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.width = W * dpr; c.height = H * dpr; var x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#f3bd7b'); g.addColorStop(1, '#e49b55'); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  var r = SC.rng(7);
+  for (var i = 0; i < H / 7; i++) {
+    var y = i * 7 + r() * 5; x.beginPath(); x.moveTo(0, y);
+    for (var xx = 0; xx <= W; xx += 40) x.lineTo(xx, y + Math.sin(xx / 120 + i) * 2.5 + r() * 1.5);
+    x.strokeStyle = 'rgba(160,90,30,' + (0.05 + r() * 0.1) + ')'; x.lineWidth = 0.6 + r() * 1.6; x.stroke();
+  }
+  var vg = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(90,40,0,0.25)'); x.fillStyle = vg; x.fillRect(0, 0, W, H);
+}
+
+// ---------- 繪製 ----------
+var cv = $('cv'), ctx = cv.getContext('2d'), stageEl = $('stage');
+var L = { s: 50, ox: 0, oy: 0 };
+function computeLayout() {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight;
+  L.s = Math.min(W / (SC.COLS + 0.8), H / (SC.ROWS + 0.9), 90);
+  L.ox = W / 2 - (SC.COLS - 1) * L.s / 2; L.oy = H / 2 - (SC.ROWS - 1) * L.s / 2;
+}
+function P(x, y) { return [L.ox + x * L.s, L.oy + y * L.s]; }
+function drawHole(c, x, y, s) {
+  c.beginPath(); c.arc(x, y, s * 0.2, 0, Math.PI * 2); c.fillStyle = '#f9ead3'; c.fill();
+  c.beginPath(); c.arc(x, y, s * 0.15, 0, Math.PI * 2); c.fillStyle = '#4a2a14'; c.fill();
+  c.beginPath(); c.arc(x, y + s * 0.03, s * 0.12, 0, Math.PI * 2); c.fillStyle = '#2b170a'; c.fill();
+}
+function drawPlank(c, holes, color, s, alpha) {
+  var a = holes[0], b = holes[holes.length - 1], dx = b[0] - a[0], dy = b[1] - a[1], len = Math.sqrt(dx * dx + dy * dy), ang = Math.atan2(dy, dx), hw = s * 0.32;
+  c.save(); c.globalAlpha = alpha == null ? 1 : alpha; c.translate(a[0], a[1]); c.rotate(ang);
+  c.shadowColor = 'rgba(60,25,0,0.35)'; c.shadowBlur = s * 0.12; c.shadowOffsetY = s * 0.08;
+  c.beginPath(); c.moveTo(0, -hw); c.lineTo(len, -hw); c.arc(len, 0, hw, -Math.PI / 2, Math.PI / 2); c.lineTo(0, hw); c.arc(0, 0, hw, Math.PI / 2, Math.PI * 1.5); c.closePath();
+  c.fillStyle = PLANK[color][0]; c.fill(); c.shadowColor = 'transparent';
+  c.save(); c.clip();
+  for (var i = 0; i < 5; i++) { var yy = -hw + hw * 2 * (i + 0.5) / 5 + Math.sin(i * 7) * hw * 0.1; c.beginPath(); c.moveTo(-hw, yy); c.bezierCurveTo(len * 0.3, yy + hw * 0.15, len * 0.6, yy - hw * 0.15, len + hw, yy); c.strokeStyle = 'rgba(70,30,5,0.18)'; c.lineWidth = s * 0.02; c.stroke(); }
+  c.fillStyle = 'rgba(255,255,255,0.18)'; c.fillRect(-hw, -hw, len + hw * 2, hw * 0.35);
+  c.restore();
+  c.lineWidth = s * 0.05; c.strokeStyle = PLANK[color][1]; c.stroke();
+  for (var h = 0; h < holes.length; h++) {
+    var hx = (holes[h][0] - a[0]) * Math.cos(-ang) - (holes[h][1] - a[1]) * Math.sin(-ang);
+    c.beginPath(); c.arc(hx, 0, s * 0.17, 0, Math.PI * 2); c.fillStyle = PLANK[color][1]; c.fill();
+    c.beginPath(); c.arc(hx, s * 0.02, s * 0.13, 0, Math.PI * 2); c.fillStyle = '#3a1f0b'; c.fill();
+  }
+  c.restore();
+}
+function drawScrew(c, x, y, s, lift, rot) {
+  lift = lift || 0;
+  if (lift) { c.beginPath(); c.ellipse(x, y + s * 0.04, s * 0.18, s * 0.1, 0, 0, Math.PI * 2); c.fillStyle = 'rgba(0,0,0,0.25)'; c.fill(); }
+  var yy = y - lift;
+  if (lift) { c.fillStyle = '#b9b4ac'; c.fillRect(x - s * 0.06, yy, s * 0.12, lift); for (var k = 0; k < lift; k += s * 0.08) { c.fillStyle = 'rgba(0,0,0,0.2)'; c.fillRect(x - s * 0.06, yy + k, s * 0.12, s * 0.025); } }
+  var g = c.createRadialGradient(x - s * 0.06, yy - s * 0.06, s * 0.02, x, yy, s * 0.22);
+  g.addColorStop(0, '#fff1d6'); g.addColorStop(0.5, '#e8b46e'); g.addColorStop(1, '#b0742e');
+  c.beginPath(); c.arc(x, yy, s * 0.2, 0, Math.PI * 2); c.fillStyle = g; c.fill(); c.lineWidth = s * 0.03; c.strokeStyle = '#7a4a18'; c.stroke();
+  c.save(); c.translate(x, yy); c.rotate(rot || 0.4); c.fillStyle = '#7a4a18';
+  c.fillRect(-s * 0.12, -s * 0.03, s * 0.24, s * 0.06); c.fillRect(-s * 0.03, -s * 0.12, s * 0.06, s * 0.24); c.restore();
+}
+function drawHome() {
+  var c = $('homeCv'), dpr = Math.min(2, window.devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight; if (!W) return;
+  c.width = W * dpr; c.height = H * dpr; var x = c.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var s = 46;
+  drawPlank(x, [[W / 2 - s * 2.2, H * 0.32], [W / 2 + s * 1.2, H * 0.32]], 0, s); drawScrew(x, W / 2 - s * 2.2, H * 0.32, s); drawScrew(x, W / 2 + s * 1.2, H * 0.32, s);
+  drawPlank(x, [[W / 2 + s * 0.3, H * 0.18], [W / 2 + s * 1.6, H * 0.78]], 3, s); drawScrew(x, W / 2 + s * 0.3, H * 0.18, s);
+  drawPlank(x, [[W / 2 - s * 1.4, H * 0.75], [W / 2 + s * 0.2, H * 0.62]], 2, s); drawScrew(x, W / 2 - s * 1.4, H * 0.75, s); drawScrew(x, W / 2 + s * 0.2, H * 0.62, s, 14);
+}
+
+// ---------- 遊戲狀態 ----------
+var mode = 'campaign', curLevel = 1, start = null, st = null, moves = [], selA = -1, tool = '', vis = [], falling = [], flyAnim = null;
+var t0 = 0, limitMs = 0, playing = false, finished = false, raceLocked = false, finishMs = 0, shakeAt = {}, dailyDay = '';
+var inRace = false, raceOver = false, raceStart = 0, raceLimit = 0, myDoneMs = 0, lastCount = -1, warnSec = -1;
+function setupLevel(level) {
+  start = SC.clone(level); st = SC.clone(level); moves = []; selA = -1; tool = ''; falling = []; flyAnim = null; shakeAt = {};
+  vis = st.planks.map(function () { return { ang: 0, av: 0, piv: [0, 0] }; });
+  t0 = 0; finished = false; playing = true; limitMs = SC.timeLimit(start) * 1000; warnSec = -1;
+  computeLayout(); updateUi();
+}
+function persist() {
+  if ((mode !== 'campaign' && mode !== 'daily') || !playing || finished) return;
+  MG.saveGame('sc', { mode: mode, level: curLevel, day: dailyDay, moves: moves, el: t0 ? Date.now() - t0 : 0 });
+}
+function savedFor(m) {
+  var sv = MG.loadGame('sc'); if (!sv || sv.mode !== m) return null;
+  if (m === 'campaign' && sv.level !== myLevel()) return null;
+  if (m === 'daily' && sv.day !== MG.today()) return null;
+  if (sv.el && start && sv.el >= SC.timeLimit(start) * 1000) return null;
+  return sv;
+}
+function applySave(sv) {
+  for (var k = 0; k < sv.moves.length; k++) { if (!SC.apply(st, sv.moves[k])) break; moves.push(sv.moves[k]); }
+  vis = st.planks.map(function () { return { ang: 0, av: 0, piv: [0, 0] }; });
+  t0 = sv.el ? Date.now() - sv.el : 0; updateUi();
+  if (moves.length) MG.toast('已接續上次的進度', 1800);
+}
+function visHoles(k, planks) {
+  var p = (planks || st.planks)[k], v = vis[k], c = Math.cos(v.ang), s = Math.sin(v.ang);
+  return p.h.map(function (q) {
+    var dx = q[0] - v.piv[0], dy = q[1] - v.piv[1];
+    return v.ang ? [v.piv[0] + c * dx - s * dy, v.piv[1] + s * dx + c * dy] : [q[0], q[1]];
+  });
+}
+function elapsed() { if (mode === 'race') return myDoneMs || (raceStart && Date.now() > raceStart ? Date.now() - raceStart : 0); return t0 ? (finished ? finishMs : Date.now() - t0) : 0; }
+function updateUi() {
+  if (!st) return;
+  var left = SC.remaining(st);
+  $('sLeft').textContent = '剩下 ' + left + ' 塊木板';
+  if (mode === 'race') $('sTime').textContent = fmtT(elapsed());
+  else {
+    var rem = limitMs - elapsed(); $('sTime').textContent = fmtT(rem + 999); $('sTime').classList.toggle('warn', rem < 15000);
+    var sec = Math.ceil(rem / 1000); if (t0 && !finished && rem < 10000 && sec !== warnSec && sec > 0) { warnSec = sec; MG.sfx.tick(); }
+  }
+  $('bUndo').disabled = !moves.length || finished;
+  $('bHammer').disabled = st.hammer || finished; $('bDrill').disabled = st.drill || finished; $('bRestart').disabled = finished || !moves.length;
+  $('bHammer').classList.toggle('on', tool === 'h'); $('bDrill').classList.toggle('on', tool === 'd');
+  var tip = $('modeTip');
+  if (tool === 'h') { tip.textContent = '🔨 點一塊木板把它打掉'; tip.classList.remove('hidden'); }
+  else if (tool === 'd') { tip.textContent = '🪛 點一個空位鑽新的洞'; tip.classList.remove('hidden'); }
+  else tip.classList.add('hidden');
+}
+function toWorld(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left - L.ox) / L.s, (e.clientY - r.top - L.oy) / L.s]; }
+function nearestHole(gx, gy) {
+  var best = -1, bd = 0.45 * 0.45;
+  for (var i = 0; i < st.holes.length; i++) { var dx = st.holes[i][0] - gx, dy = st.holes[i][1] - gy, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } }
+  return best;
+}
+function commit(mv) {
+  var prev = SC.clone(st), ev = [];
+  if (!SC.apply(st, mv, ev)) return false;
+  moves.push(mv); if (!t0) t0 = Date.now();
+  ev.forEach(function (e) {
+    if (e[0] === 'swing') {
+      var k = e[1], v = vis[k], op = prev.planks[k], np = st.planks[k];
+      var curAng = Math.atan2(op.h[op.h.length - 1][1] - op.h[0][1], op.h[op.h.length - 1][0] - op.h[0][0]) + v.ang;
+      var newAng = Math.atan2(np.h[np.h.length - 1][1] - np.h[0][1], np.h[np.h.length - 1][0] - np.h[0][0]);
+      var d = curAng - newAng; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+      v.ang = d; v.av = 0; v.piv = [e[2], e[3]]; sfx.swing();
+    } else if (e[0] === 'fall' || e[0] === 'smash') {
+      var k2 = e[1], hs = visHoles(k2, prev.planks);
+      if (e[0] === 'smash') {
+        var mid = [(hs[0][0] + hs[hs.length - 1][0]) / 2, (hs[0][1] + hs[hs.length - 1][1]) / 2];
+        falling.push({ h: [hs[0], mid], c: prev.planks[k2].c, vx: -1.5, vy: -3, av: -3, ang: 0, t: 0 });
+        falling.push({ h: [mid, hs[hs.length - 1]], c: prev.planks[k2].c, vx: 1.5, vy: -3, av: 3, ang: 0, t: 0 });
+        sfx.smash();
+      } else { falling.push({ h: hs, c: prev.planks[k2].c, vx: (Math.random() - 0.5) * 1.2, vy: 0, av: (Math.random() - 0.5) * 2.5 + vis[k2].av * 0.3, ang: 0, t: 0 }); setTimeout(sfx.fall, 150); }
+    }
+  });
+  if (mode === 'race' && MG.state.sock) MG.state.sock.emit('race:prog', { prog: st.planks.length - SC.remaining(st) });
+  updateUi(); persist();
+  if (SC.solved(st)) setTimeout(onSolved, 700);
+  return true;
+}
+function shake(i) { shakeAt[i] = performance.now(); MG.sfx.err(); }
+cv.addEventListener('pointerdown', function (e) {
+  MG.unlock();
+  if (!playing || finished || raceLocked) return;
+  var w = toWorld(e), gx = w[0], gy = w[1];
+  if (tool === 'd') {
+    var x = Math.round(gx), y = Math.round(gy);
+    if (Math.abs(gx - x) < 0.45 && Math.abs(gy - y) < 0.45 && commit(['d', x, y])) { sfx.drill(); tool = ''; updateUi(); MG.toast('鑽好一個新的洞！'); }
+    else { MG.sfx.err(); MG.toast('這裡不能鑽洞（被木板擋住或已經有洞）'); }
+    return;
+  }
+  if (tool === 'h') {
+    var k = SC.topPlankAt(st, gx, gy);
+    if (k >= 0) { commit(['h', k]); tool = ''; updateUi(); } else MG.sfx.err();
+    return;
+  }
+  var i = nearestHole(gx, gy);
+  if (selA >= 0) {
+    if (i === selA || i < 0) { selA = -1; return; }
+    if (SC.holeFree(st, i)) {
+      var a = selA; selA = -1; flyAnim = { a: a, b: i, t: 0 };
+      commit([a, i]); sfx.place(); return;
+    }
+    if (SC.canPick(st, i)) { selA = i; sfx.pick(); return; }
+    shake(i); return;
+  }
+  if (i < 0) return;
+  if (SC.canPick(st, i)) { selA = i; sfx.pick(); return; }
+  if (st.occ[i]) { shake(i); MG.toast('這顆螺絲被上面的木板擋住了', 1500); }
+});
+function undo() {
+  if (!moves.length || finished) return;
+  moves.pop(); var s = SC.clone(start); moves.forEach(function (m) { SC.apply(s, m); });
+  st = s; vis = st.planks.map(function () { return { ang: 0, av: 0, piv: [0, 0] }; }); falling = []; selA = -1; tool = ''; flyAnim = null;
+  MG.sfx.undo(); updateUi(); persist();
+  if (mode === 'race' && MG.state.sock) MG.state.sock.emit('race:prog', { prog: st.planks.length - SC.remaining(st) });
+}
+function restart() { if (finished || !moves.length) return; var keep = t0; setupLevel(start); t0 = keep; MG.sfx.undo(); persist(); }
+$('bUndo').onclick = function () { MG.unlock(); undo(); };
+$('bRestart').onclick = function () { MG.unlock(); restart(); };
+$('bHammer').onclick = function () { MG.unlock(); if (st.hammer || finished) return; tool = tool === 'h' ? '' : 'h'; selA = -1; updateUi(); };
+$('bDrill').onclick = function () { MG.unlock(); if (st.drill || finished) return; tool = tool === 'd' ? '' : 'd'; selA = -1; updateUi(); };
+
+var lastT = performance.now(), lastUi = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  var dt = Math.min(0.04, (now - lastT) / 1000); lastT = now;
+  if ($('game').classList.contains('hidden') || !st) return;
+  vis.forEach(function (v) { if (v.ang || v.av) { v.av += (-26 * Math.sin(v.ang) - 2.2 * v.av) * dt; v.ang += v.av * dt; if (Math.abs(v.ang) < 0.002 && Math.abs(v.av) < 0.01) { v.ang = 0; v.av = 0; } } });
+  falling.forEach(function (f) { f.t += dt; f.vy += 22 * dt; f.ang += f.av * dt; });
+  falling = falling.filter(function (f) { return f.t < 2.5; });
+  if (flyAnim) { flyAnim.t += dt / 0.28; if (flyAnim.t >= 1) flyAnim = null; }
+  if (now - lastUi > 200) {
+    lastUi = now; updateUi();
+    if (mode !== 'race' && playing && !finished && t0 && elapsed() > limitMs) onTimeout();
+  }
+  render(now);
+}
+function render(now) {
+  var W = stageEl.clientWidth, H = stageEl.clientHeight, s = L.s;
+  ctx.clearRect(0, 0, W, H);
+  // 底板
+  var bx = L.ox - s * 0.55, by = L.oy - s * 0.55, bw = (SC.COLS - 1) * s + s * 1.1, bh = (SC.ROWS - 1) * s + s * 1.1;
+  ctx.fillStyle = 'rgba(120,60,15,0.10)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, bw, bh, s * 0.3) : ctx.rect(bx, by, bw, bh); ctx.fill();
+  for (var i = 0; i < st.holes.length; i++) { var p = P(st.holes[i][0], st.holes[i][1]); drawHole(ctx, p[0], p[1], s); }
+  // 依圖層畫木板與螺絲
+  var order = st.planks.map(function (p, k) { return k; }).filter(function (k) { return !st.planks[k].g; }).sort(function (a, b) { return st.planks[a].l - st.planks[b].l; });
+  var screwsByTop = {};
+  for (var j = 0; j < st.holes.length; j++) if (st.occ[j]) { var top = SC.screwTop(st, j); (screwsByTop[top] = screwsByTop[top] || []).push(j); }
+  function drawScrewsAt(top) {
+    (screwsByTop[top] || []).forEach(function (j) {
+      if (j === selA) return;
+      if (flyAnim && flyAnim.b === j) return;
+      var p = P(st.holes[j][0], st.holes[j][1]), sx = 0, sh = shakeAt[j] ? (now - shakeAt[j]) / 1000 : 9;
+      if (sh < 0.3) sx = Math.sin(sh * 60) * s * 0.06 * (1 - sh / 0.3);
+      drawScrew(ctx, p[0] + sx, p[1], s);
+    });
+  }
+  drawScrewsAt(-1);
+  order.forEach(function (k) {
+    var hs = visHoles(k).map(function (q) { return P(q[0], q[1]); });
+    drawPlank(ctx, hs, st.planks[k].c, s);
+    drawScrewsAt(st.planks[k].l);
+  });
+  // 掉落中的木板
+  falling.forEach(function (f) {
+    var cx = (f.h[0][0] + f.h[f.h.length - 1][0]) / 2, cy = (f.h[0][1] + f.h[f.h.length - 1][1]) / 2, c = Math.cos(f.ang), sn = Math.sin(f.ang);
+    var hs = f.h.map(function (q) { var dx = q[0] - cx, dy = q[1] - cy; return P(cx + c * dx - sn * dy + f.vx * f.t, cy + sn * dx + c * dy + f.vy * f.t * 0.5 + 0); });
+    drawPlank(ctx, hs, f.c, s, Math.max(0, 1 - f.t / 2.5));
+  });
+  // 飛行中的螺絲、被拿起的螺絲
+  if (flyAnim) {
+    var a = P(st.holes[flyAnim.a][0], st.holes[flyAnim.a][1]), b = P(st.holes[flyAnim.b][0], st.holes[flyAnim.b][1]), t = flyAnim.t, e = t * t * (3 - 2 * t);
+    drawScrew(ctx, a[0] + (b[0] - a[0]) * e, a[1] + (b[1] - a[1]) * e, s, s * 0.35 * Math.sin(Math.PI * t) + s * 0.05 * (1 - t), t * 6);
+  }
+  if (selA >= 0) {
+    var p2 = P(st.holes[selA][0], st.holes[selA][1]); drawScrew(ctx, p2[0], p2[1], s, s * 0.3 + Math.sin(now / 150) * s * 0.03, now / 300);
+    for (var q = 0; q < st.holes.length; q++) if (SC.holeFree(st, q)) {
+      var pp = P(st.holes[q][0], st.holes[q][1]); ctx.beginPath(); ctx.arc(pp[0], pp[1], s * 0.27 + Math.sin(now / 200) * s * 0.02, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = s * 0.04; ctx.setLineDash([s * 0.08, s * 0.06]); ctx.stroke(); ctx.setLineDash([]);
+    }
+  }
+}
+requestAnimationFrame(frame);
+if (/[?&]test=1/.test(location.search)) window.__scTest = { get st() { return st; }, get L() { return L; }, get falling() { return falling; } };
+
+// ---------- 畫面 ----------
+function resize() {
+  drawBg(); var dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = stageEl.clientWidth * dpr; cv.height = stageEl.clientHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  computeLayout(); if (!$('home').classList.contains('hidden')) drawHome();
+}
+window.addEventListener('resize', resize);
+function showScreen(n) { $('home').classList.toggle('hidden', n !== 'home'); $('game').classList.toggle('hidden', n !== 'game'); resize(); }
+MG.bindSound($('bSound'), true); MG.bindSound($('bSound2'), false);
+function lvKey() { return 'sc_level_' + (MG.state.acct ? MG.state.acct.name : 'guest'); }
+function myLevel() { return Math.max(1, store.get(lvKey()) || 1); }
+function setMyLevel(n) { store.set(lvKey(), Math.max(myLevel(), n)); }
+function dailyBestKey() { return 'sc_daily_' + MG.displayName() + '_' + MG.today(); }
+function refreshHome() {
+  var S = MG.state;
+  $('who').textContent = !S.online ? '單機模式（進度存在這台裝置）' : S.acct ? '👤 ' + S.acct.name : '👤 ' + S.guestName + '（訪客，回大廳可登入）';
+  $('campSub').textContent = '目前第 ' + myLevel() + ' 關' + (savedFor('campaign') ? '（有存檔，可接著玩）' : '');
+  var b = store.get(dailyBestKey()); $('dailySub').textContent = b ? '今日最佳 ' + fmtT2(b) : '每天一題，比誰最快';
+}
+function withLoading(fn) {
+  MG.showModal('<h2>🔩 關卡準備中…</h2><p class="mgNote">正在排列木板和螺絲</p>', 'loading');
+  setTimeout(function () { var lv = fn(); MG.closeModal(); return lv; }, 60);
+}
+function startCampaign() {
+  mode = 'campaign'; curLevel = myLevel(); $('lvTitle').textContent = '第 ' + curLevel + ' 關'; $('raceBox').classList.add('hidden');
+  showScreen('game'); st = null;
+  withLoading(function () { setupLevel(SC.campaign(curLevel)); var sv = savedFor('campaign'); if (sv) applySave(sv); setTimeout(function () { SC.campaign(curLevel + 1); }, 1500); });
+}
+function startDaily() {
+  mode = 'daily'; dailyDay = MG.today(); $('lvTitle').textContent = '每日 ' + dailyDay.slice(5).replace('-', '/'); $('raceBox').classList.add('hidden');
+  showScreen('game'); st = null; withLoading(function () { setupLevel(SC.daily(dailyDay)); var sv = savedFor('daily'); if (sv) applySave(sv); });
+}
+function onTimeout() {
+  finished = true; playing = false; MG.saveGame('sc', null); MG.sfx.lose();
+  MG.showModal('<h2>⏰ 時間到！</h2><p style="text-align:center">還剩 ' + SC.remaining(st) + ' 塊木板，再試一次吧！</p><button class="mgBtn green" id="tAgain">再試一次</button><button class="mgBtn grey" id="tHome">回選單</button>', 'win');
+  $('tAgain').onclick = function () { MG.closeModal(); setupLevel(start); };
+  $('tHome').onclick = function () { MG.closeModal(); goHome(); };
+}
+function onSolved() {
+  if (finished) return;
+  finished = true; playing = false; finishMs = t0 ? Date.now() - t0 : 0; updateUi(); MG.sfx.win();
+  if (mode === 'race') return raceSolved();
+  MG.saveGame('sc', null);
+  var stats = '<div class="mgStats"><div>' + fmtT2(finishMs) + '<small>時間</small></div><div>' + moves.length + '<small>步數</small></div></div>';
+  if (mode === 'campaign') {
+    setMyLevel(curLevel + 1); MG.post('/api/clear', { game: 'sc', level: curLevel, moves: moves });
+    MG.showModal('<h2>🎉 第 ' + curLevel + ' 關 完成！</h2>' + stats + '<button class="mgBtn green" id="wNext">下一關 ▶</button><button class="mgBtn grey" id="wHome">回選單</button>', 'win');
+    $('wNext').onclick = function () { MG.closeModal(); startCampaign(); };
+    $('wHome').onclick = function () { MG.closeModal(); goHome(); };
+  } else {
+    var key = dailyBestKey(), old = store.get(key), isBest = !old || finishMs < old; if (isBest) store.set(key, finishMs);
+    var S = MG.state, note = S.online && S.acct ? '成績已上傳到今日排行榜' : S.online ? '回大廳登入帳號才會列入排行榜' : '單機模式成績只存在這台裝置';
+    MG.post('/api/daily', { game: 'sc', day: dailyDay, ms: finishMs, moves: moves });
+    MG.showModal('<h2>🎉 每日挑戰完成！</h2>' + stats + '<p class="mgNote">' + (isBest ? '🏅 新的今日最佳！' : '今日最佳：' + fmtT2(old)) + '<br>' + note + '</p>' +
+      '<button class="mgBtn" id="wAgain">再挑戰一次</button>' + (S.online ? '<button class="mgBtn blue" id="wRank">看排行榜</button>' : '') + '<button class="mgBtn grey" id="wHome">回選單</button>', 'win');
+    $('wAgain').onclick = function () { MG.closeModal(); startDaily(); };
+    if ($('wRank')) $('wRank').onclick = function () { goHome(); MG.openRank('sc', 'daily'); };
+    $('wHome').onclick = function () { MG.closeModal(); goHome(); };
+  }
+}
+function goHome() { persist(); MG.flushSave('sc'); if (mode === 'race') MG.leaveRace(); inRace = false; raceLocked = false; playing = false; showScreen('home'); refreshHome(); }
+$('bBack').onclick = function () {
+  if (mode === 'race' && inRace && !raceOver) {
+    MG.showModal('<h2>要離開對戰嗎？</h2><p style="text-align:center">離開就算放棄這一場。</p><button class="mgBtn" id="qStay">繼續比賽</button><button class="mgBtn grey" id="qLeave">離開</button>', 'confirm');
+    $('qStay').onclick = MG.closeModal; $('qLeave').onclick = function () { MG.closeModal(); goHome(); };
+    return;
+  }
+  goHome();
+};
+$('bCamp').onclick = function () { MG.unlock(); startCampaign(); };
+$('bDaily').onclick = function () { MG.unlock(); startDaily(); };
+$('bHall').onclick = function () { location.href = 'index.html'; };
+$('bRank').onclick = function () { MG.unlock(); MG.openRank('sc'); };
+
+MG.raceSetup('sc', {
+  intro: '所有人拿到同一題，最先讓木板全部掉光的人獲勝！',
+  begin: function (o) {
+    mode = 'race'; inRace = true; raceOver = false; myDoneMs = 0; lastCount = -1;
+    raceStart = Date.now() + o.startIn; raceLimit = o.limit;
+    $('lvTitle').textContent = '對戰・' + MG.DIFF[o.diff]; $('raceBox').classList.remove('hidden'); $('raceBox').innerHTML = '';
+    showScreen('game'); setupLevel(o.level || SC.race(o.seed, o.diff)); raceLocked = true; t0 = 0;
+  },
+  standings: function (l) { if (inRace) $('raceBox').innerHTML = MG.standingsHtml(l); },
+  end: function (o) { if (!inRace) return; raceOver = true; inRace = false; $('countdown').classList.add('hidden'); MG.raceResult(o, '塊', function () { playing = false; showScreen('home'); refreshHome(); }, goHome); },
+  disconnected: function () { if (inRace) { MG.toast('連線中斷，對戰結束'); goHome(); } }
+});
+setInterval(function () {
+  if (!inRace || raceOver) return;
+  var now = Date.now(), cd = $('countdown');
+  if (now < raceStart) { var n = Math.ceil((raceStart - now) / 1000); cd.classList.remove('hidden'); cd.textContent = n; if (n !== lastCount) { lastCount = n; MG.sfx.tick(); } return; }
+  if (raceLocked && !myDoneMs && !finished) { raceLocked = false; t0 = raceStart; cd.textContent = '開始！'; MG.sfx.go(); setTimeout(function () { if (cd.textContent === '開始！') cd.classList.add('hidden'); }, 700); }
+  if (!myDoneMs && now - raceStart > raceLimit) { raceLocked = true; cd.classList.remove('hidden'); cd.textContent = '時間到！'; }
+}, 200);
+function raceSolved() {
+  raceLocked = true;
+  MG.state.sock.emit('race:done', { moves: moves }, function (r) {
+    if (r && r.ok) { myDoneMs = r.ms; $('countdown').classList.remove('hidden'); $('countdown').textContent = r.place === 1 ? '第一名！' : '第 ' + r.place + ' 名'; }
+    else MG.toast((r && r.error) || '送出失敗');
+  });
+}
+$('bRace').onclick = function () { MG.unlock(); MG.openRace(); };
+$('bHelp').onclick = function () {
+  MG.unlock();
+  MG.showModal('<h2>❓ 遊戲說明</h2><h3>🔩 怎麼玩</h3><ul>' +
+    '<li>點一顆螺絲把它轉出來，再點一個<b>空的洞</b>把螺絲鎖進去。</li>' +
+    '<li>木板只剩一顆螺絲時會繞著它擺盪垂下；一顆都沒有就會掉下去。</li>' +
+    '<li>被上層木板蓋住的螺絲轉不動；被木板蓋住的洞也不能用。</li>' +
+    '<li>螺絲鎖進的洞剛好對到木板的孔時，會把那塊木板重新固定住。</li>' +
+    '<li>在時間內讓所有木板都掉下去就過關！</li></ul>' +
+    '<h3>🛠 道具（每關各一次）</h3><ul><li><b>復原</b>：退回上一步，不限次數。</li><li><b>鎚子</b>：直接打掉一塊木板。</li><li><b>電鑽</b>：在空位多鑽一個洞。</li></ul>' +
+    '<h3>🎮 模式</h3><ul><li><b>闖關模式</b>：木板越來越多、空洞越來越少。</li><li><b>每日挑戰</b>：每天一題，比誰最快。</li><li><b>連線對戰</b>：2～6 人同時解同一題，最先拆完的人獲勝。</li></ul>' +
+    '<button class="mgBtn grey" id="hClose">關閉</button><div class="mgCredit">遊戲製作：Eric Hu</div>', 'help');
+  $('hClose').onclick = MG.closeModal;
+};
+
+resize(); refreshHome();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawHome);
+MG.init({ socket: true }).then(function (S) {
+  if (!S.online) MG.toast('單機模式：排行榜與對戰需要連線版', 3000);
+  else if (S.acct && S.acct.stats && S.acct.stats.sc_level) setMyLevel(S.acct.stats.sc_level);
+  refreshHome(); askResume();
+});
+document.addEventListener('visibilitychange', function () { if (document.hidden) { persist(); MG.flushSave('sc', true); } });
+window.addEventListener('pagehide', function () { persist(); MG.flushSave('sc', true); });
+function askResume() {
+  var c = savedFor('campaign'), d = savedFor('daily'), sv = c && d ? (c.t > d.t ? c : d) : (c || d);
+  if (!sv || !sv.moves || !sv.moves.length || MG.modalKind()) return;
+  var what = sv.mode === 'campaign' ? '闖關模式 第 ' + sv.level + ' 關' : '今天的每日挑戰';
+  MG.showModal('<h2>💾 繼續上次的遊戲？</h2><p style="text-align:center">' + what + '<br>已經走了 ' + sv.moves.length + ' 步、用了 ' + fmtT(sv.el || 0) + '</p>' +
+    '<button class="mgBtn green" id="rsYes">繼續玩</button><button class="mgBtn grey" id="rsNo">先不要</button>', 'info');
+  $('rsYes').onclick = function () { MG.closeModal(); MG.unlock(); if (sv.mode === 'campaign') startCampaign(); else startDaily(); };
+  $('rsNo').onclick = MG.closeModal;
+}
+})();
+</script>
+</body>
+</html>
